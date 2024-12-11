@@ -1,3 +1,5 @@
+import pathlib
+
 from lark import Lark, Transformer
 from lark.indenter import Indenter, PythonIndenter
 
@@ -11,7 +13,9 @@ class SofaIndenter(Indenter):
     tab_len = 4
 
 
-with open("sofa.lark") as f:
+grammar_file = pathlib.Path(__file__).parent / "grammar/sofa.lark"
+
+with open(grammar_file) as f:
     lark_parser = Lark(f.read(), parser='lalr', transformer=Transformer(), postlex=SofaIndenter())
     with open("test/resources/full_scope.sofa") as sa:
         print(lark_parser.parse(sa.read()).pretty())
