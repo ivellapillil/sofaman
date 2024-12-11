@@ -1,0 +1,14 @@
+[project]
+authors = ["indukumar <v.h.indukumar@gmail.com>"]
+channels = ["conda-forge", "https://conda.modular.com/max"]
+description = "Add a short description here"
+name = "sofarchiman"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = ">=3.13.0,<4"
+lark = ">=1.2"
+session-info = ">=1.0.0,<2"

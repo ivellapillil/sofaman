@@ -1,0 +1,9 @@
+actor Eve
+
+component House
+
+class Chair
+
+interface Furniture
+
+relation Table -> Chair
