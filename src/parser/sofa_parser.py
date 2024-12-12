@@ -12,13 +12,18 @@ class SofaIndenter(Indenter):
     DEDENT_type = '_DEDENT'
     tab_len = 4
 
+class SofaParser():
 
-grammar_file = pathlib.Path(__file__).parent / "grammar/sofa.lark"
+    def __init__(self):
+        grammar_file = pathlib.Path(__file__).parent / "grammar/sofa.lark"
+        with open(grammar_file) as f:
+            self.parser = Lark(f.read(), parser='lalr', transformer=Transformer(), postlex=SofaIndenter())
 
-with open(grammar_file) as f:
-    lark_parser = Lark(f.read(), parser='lalr', transformer=Transformer(), postlex=SofaIndenter())
-    with open("test/resources/full_scope.sofa") as sa:
-        print(lark_parser.parse(sa.read()).pretty())
+    def parse(self, content):
+        return self.parser.parse(content)
 
-    with open("test/resources/simple.sofa") as sa:
-        print(lark_parser.parse(sa.read()).pretty())
+_sofa_parser = SofaParser()        
+
+def parse(file):
+    return _sofa_parser.parse(file)
+
