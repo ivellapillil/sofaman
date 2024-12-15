@@ -128,5 +128,18 @@ class Domain(ArchElement):
 
 class SofaRoot:
     def __init__(self, children):
-        self.children = children
+        self.imports = self._find(children, Imports)
+        self.diagrams = self._find(children, Diagrams)
+        self.stereotypes = self._find(children, Stereotypes)
+        self.actors = self._find(children, Actors)
+        self.components = self._find(children, Components)
+        self.relations = self._find(children, Relations)
+        self.interfaces = self._find(children, Interfaces)
+        self.classes = self._find(children, Classes)
+        self.domains = self._find(children, Domains)
+        self.capabilities = self._find(children, Capabilities)
 
+    def _find(self, list, elemType):
+        for i in list:
+            if type(i) == elemType:
+                return i
