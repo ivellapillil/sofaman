@@ -89,7 +89,7 @@ class SofaTransformer(SofaStructTransformer):
 
     def capabilities(self, args):
         return Capabilities(self._as_arch_elements(args, Capability))
-
+    
     def domains(self, args):
         return Domains(self._as_arch_elements(args, Domain))
 

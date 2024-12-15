@@ -24,10 +24,6 @@ class ArchElementList():
     def __init__(self, elems):
         self.elems = elems
 
-class SofaRoot:
-    def __init__(self, children):
-        self.children = children
-
 # -----
 
 class Import: 
@@ -113,7 +109,6 @@ class Components(ArchElementList):
         super().__init__(elems)
 
 class Capability(ArchElement): 
-
     def __init__(self, struct):
         super().__init__(struct)
 
@@ -125,4 +120,13 @@ class Domains(ArchElementList):
     def __init__(self, elems):
         super().__init__(elems)
 
-class Domain(ArchElement): ...
+class Domain(ArchElement):
+    def __init__(self, struct):
+        super().__init__(struct)
+
+# ----
+
+class SofaRoot:
+    def __init__(self, children):
+        self.children = children
+
