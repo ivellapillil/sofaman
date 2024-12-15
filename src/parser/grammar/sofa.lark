@@ -4,7 +4,7 @@
 %ignore WS_INLINE
 
 ?start: sofa
-sofa: (imports | actors | components | classes | interfaces | relations | stereotypes | diagrams)+
+sofa: (imports | actors | components | classes | interfaces | relations | stereotypes | diagrams | capabilities | domains)+
 
 # Terminals -----
 
@@ -39,36 +39,37 @@ _vector_item: (SIMPLE_STRING | QUOTED_STRING) (_COMMA|_NL)?
 vector_items: _vector_item+
 vector: _LBRA vector_items _RBRA
 
-multiline_vector_body: _NL _INDENT ("-" (map | name) _NL?)+ _DEDENT
-
 key_value: name _COLON scalar _NL?
 vector_value: name _COLON vector _NL?
 multiline_value: name _COLON _PIPE _NL _INDENT multiline_scalar _DEDENT
 multiline_vector_value: name _COLON multiline_vector_body
 
-map: name _COLON _NL properties
 properties: _INDENT (vector_value | multiline_vector_value | key_value | map | multiline_value)+ _DEDENT
+map: name _COLON _NL properties
+
+multiline_vector_body: _NL _INDENT ("-" (map | name) _NL?)+ _DEDENT
 
 # Element Rules ----
 
-element_body: _COLON _NL properties
+struct_body: _COLON _NL properties
 
 # ---
-actor: "actor" name element_body? _NL*
+actor: "actor" name struct_body? _NL*
 actors: actor+
 
 # ---
-association: "->"
-bidirectional: "<->"
-inheritance: "-|>"
-information_flow: ".>"
+association: "-->"
+bidirectional: "<-->"
+inheritance: "--|>"
+information_flow: "..>"
+realization: "..|>"
 
 port: _AT (CNAME|NUMBER)
 relation_name: name port?
 
-relation_type: (association | bidirectional | inheritance | information_flow)
+relation_type: (association | bidirectional | inheritance | information_flow | realization)
 
-relation: "relation" relation_name relation_type relation_name element_body? _NL*
+relation: "relation" relation_name relation_type relation_name struct_body? _NL*
 relations: relation+
 
 # ---
@@ -90,20 +91,28 @@ imports: import+
 # --- Type defs ---
 
 param_list: "(" vector_items* ")"
-typedef_body: name param_list? element_body? _NL*
+struct: name param_list? struct_body? _NL*
 
 # ---
-component: "component" typedef_body
+component: "component" struct
 components: component+
 
 # ---
 
-class: "class" typedef_body
+class: "class" struct
 classes: class+
 
 # ---
 
-interface: "interface" typedef_body
+interface: "interface" struct
 interfaces: interface+
 
+# ---
 
+capability: "capability" struct
+capabilities: capability+
+
+# ---
+
+domain: "domain" struct
+domains: domain+

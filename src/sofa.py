@@ -1,8 +1,14 @@
-import parser.sofa_parser as sofa
+from parser.sofa_parser import SofaParser
+from ir.ir import SofaIR
 
-with open("test/resources/full_scope.sofa") as sa:
-    print(sofa.parse(sa.read()).pretty())
+class _Cached:
+    ir = SofaIR()
 
-with open("test/resources/simple.sofa") as sa:
-    print(sofa.parse(sa.read()).pretty())
 
+class Sofa:
+
+    def __init__(self):
+        pass
+
+    def build(self, content: str):
+        return _Cached.ir.build(content)

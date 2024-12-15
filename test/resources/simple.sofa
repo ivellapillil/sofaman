@@ -6,4 +6,4 @@ class Chair
 
 interface Furniture
 
-relation Table -> Chair
+relation Table --> Chair
