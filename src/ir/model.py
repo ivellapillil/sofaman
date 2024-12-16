@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Protocol
+from abc import abstractmethod
 
 class SofaBase: ...
 
@@ -24,6 +26,8 @@ class ArchElementList():
     def __init__(self, elems):
         self.elems = elems
 
+    def __iter__(self):
+        return self.elems.__iter__()
 # -----
 
 class Import: 
@@ -126,6 +130,36 @@ class Domain(ArchElement):
 
 # ----
 
+class Visitor(Protocol):
+
+    @abstractmethod
+    def visit_diagram(self, context, diagram): raise NotImplementedError
+
+    @abstractmethod
+    def visit_stereotype(self, context, stereotype): raise NotImplementedError
+
+    @abstractmethod
+    def visit_actor(self, context, actor): raise NotImplementedError
+
+    @abstractmethod
+    def visit_component(self, context, component): raise NotImplementedError
+
+    @abstractmethod
+    def visit_relation(self, context, relation): raise NotImplementedError
+
+    @abstractmethod
+    def visit_interface(self, context, interface): raise NotImplementedError
+
+    @abstractmethod
+    def visit_class(self, context, clazz): raise NotImplementedError
+
+    @abstractmethod
+    def visit_domain(self, context, domain): raise NotImplementedError
+
+    @abstractmethod
+    def visit_capability(self, context, capability): raise NotImplementedError
+
+# ----
 class SofaRoot:
     def __init__(self, children):
         self.imports = self._find(children, Imports)
@@ -143,3 +177,32 @@ class SofaRoot:
         for i in list:
             if type(i) == elemType:
                 return i
+        return None
+    
+    def visit(self, context, visitor: Visitor):
+        for i in self.diagrams:
+            visitor.visit_diagram(context, i)
+        
+        for i in self.stereotypes:
+            visitor.visit_stereotype(context, i)
+        
+        for i in self.actors:
+            visitor.visit_actor(context, i)
+        
+        for i in self.components:
+            visitor.visit_component(context, i)
+        
+        for i in self.relations:
+            visitor.visit_relation(context, i)
+        
+        for i in self.interfaces:
+            visitor.visit_interface(context, i)
+        
+        for i in self.classes:
+            visitor.visit_class(context, i)
+        
+        for i in self.domains:
+            visitor.visit_domain(context, i)
+
+        for i in self.capabilities:
+            visitor.visit_capability(context, i)

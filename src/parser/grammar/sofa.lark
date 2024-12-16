@@ -99,8 +99,8 @@ components: component+
 
 # ---
 
-class: "class" struct
-classes: class+
+clazz: "class" struct
+classes: clazz+
 
 # ---
 

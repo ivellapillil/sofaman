@@ -90,21 +90,39 @@ class SofaTransformer(SofaStructTransformer):
     def capabilities(self, args):
         return Capabilities(self._as_arch_elements(args, Capability))
     
+    def capability(self, args):
+        return args[0]
+    
     def domains(self, args):
         return Domains(self._as_arch_elements(args, Domain))
 
+    def domain(self, args):
+        return args[0]
+    
     def interfaces(self, args):
         return Interfaces(self._as_arch_elements(args, Interface))
 
+    def interface(self, args):
+        return args[0]
+    
     def classes(self, args):
         return Classes(self._as_arch_elements(args, Component))
 
+    def clazz(self, args):
+        return args[0]
+    
     def components(self, args):
         return Components(self._as_arch_elements(args, Class))
 
+    def component(self, args):
+        return args[0]
+    
     def actors(self, args):
         return Actors(self._as_arch_elements(args, Actor))
 
+    def actor(self, args):
+        return args[0]
+    
     def _as_arch_elements(self, args, clazz):
         elems = []
         for arg in args:
