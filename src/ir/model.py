@@ -1,26 +1,88 @@
 from enum import Enum
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 from abc import abstractmethod
+import uuid
 
-class SofaBase: ...
+class SofaBase: 
 
-class KeyValue(SofaBase):
+    def __init__(self):
+        self.id = str(uuid.uuid4())
+
+@runtime_checkable
+class Named(Protocol):
+
+    @abstractmethod
+    def get_name(self) -> str: ...
+class KeyValue(Named):
+    
     def __init__(self, key, value):
         self.key = key
         self.value = value
-
+    
+    def get_name(self):
+        return self.key
 class Struct:
-    def __init__(self, name, parents, properties):
+    def __init__(self, name, inheritance=[], properties={}):
         self.name = name
-        self.parents = parents
+        self.inheritance = inheritance
         self.properties = properties
     
     def set_properties(self, dict):
         self.properties = dict
+    
+class Literal(SofaBase, Named):
 
-class ArchElement(SofaBase):
+    def __init__(self, name, value = ''):
+        self.name = name
+        self.value = value
+
+    def get_name(self):
+        return self.name
+class Attribute(SofaBase, Named):
+
+    def __init__(self, name, value = '', type=None, lowerBound="0", upperBound="1"):
+        super().__init__()
+        self.name = name
+        self.value = value
+        self.type = type
+        self.lowerBound = lowerBound
+        self.upperBound = upperBound
+
+    def get_name(self):
+        return self.name
+
+class ArchElement(SofaBase, Named):
     def __init__(self, struct):
+        super().__init__()
         self.struct = struct
+    
+    def get_name(self):
+        return self.struct.name
+
+    def literals(self):
+        props = self.struct.properties
+        return props['literals']
+
+    def attributes(self):
+        props = self.struct.properties
+        attrs = props['attributes']
+        if attrs is None: return None
+        ret = []
+        for i in attrs:
+            if isinstance(i, str):
+                ret.append(Attribute(i))
+            elif isinstance(i, KeyValue):
+                attr_name = i.key
+                attr_value = i.value.get("value", "")
+                attr_card = i.value.get("cardinality", None)
+                if attr_card is not None:
+                    lower,_ , upper = attr_card.partition("..")
+                attr_type = i.value.get("type", None)
+
+                ret.append(Attribute(attr_name, attr_value, attr_type, lower, upper))
+            else:
+                raise AssertionError("Type of attribute must be str|keyvalue")
+        return ret
 
 class ArchElementList():
     def __init__(self, elems):
@@ -28,6 +90,7 @@ class ArchElementList():
 
     def __iter__(self):
         return self.elems.__iter__()
+    
 # -----
 
 class Import: 
@@ -92,17 +155,37 @@ class RelationType(Enum):
     INFORMATION_FLOW = "information_flow"
     REALIZATION = "realization"
 
-class Stereotype(ArchElement): 
-    def __init__(self, stereotype: str):
-        self.stereotype = stereotype
+class Stereotype(Named): 
+
+    def __init__(self, name):
+        self.name = name
+
+    def get_name(self):
+        return self.name
+
 
 class Stereotypes(ArchElementList):
     def __init__(self, elems):
         super().__init__(elems)
 
-class Diagram(ArchElement): 
+class Primitive(ArchElement): 
+    def __init__(self, struct):
+        super().__init__(struct)
+
+class Primitives(ArchElementList):
+    def __init__(self, elems):
+        super().__init__(elems)
+
+class Diagram(Named): 
+
     def __init__(self, diagram: str | KeyValue):
         self.diagram = diagram
+
+    def get_name(self):
+        if isinstance(self.diagram, str):
+            return self.diagram
+        else:
+            return self.diagram.key
 
 class Diagrams(ArchElementList):
     def __init__(self, elems):
@@ -133,10 +216,16 @@ class Domain(ArchElement):
 class Visitor(Protocol):
 
     @abstractmethod
+    def visit_root(self, context, sofa_root): raise NotImplementedError
+
+    @abstractmethod
     def visit_diagram(self, context, diagram): raise NotImplementedError
 
     @abstractmethod
     def visit_stereotype(self, context, stereotype): raise NotImplementedError
+
+    @abstractmethod
+    def visit_primitive(self, context, primitive): raise NotImplementedError
 
     @abstractmethod
     def visit_actor(self, context, actor): raise NotImplementedError
@@ -165,6 +254,7 @@ class SofaRoot:
         self.imports = self._find(children, Imports)
         self.diagrams = self._find(children, Diagrams)
         self.stereotypes = self._find(children, Stereotypes)
+        self.primitives = self._find(children, Primitives)
         self.actors = self._find(children, Actors)
         self.components = self._find(children, Components)
         self.relations = self._find(children, Relations)
@@ -173,18 +263,42 @@ class SofaRoot:
         self.domains = self._find(children, Domains)
         self.capabilities = self._find(children, Capabilities)
 
+        self._index(children)
+
+    def _index(self, children):
+        self.index_id = {}
+        self.index_name = {}
+        for child in children:
+            for elem in child.elems:
+                if hasattr(elem, 'id'):
+                    self.index_id[elem.id] = elem
+                if isinstance(elem, Named):
+                    self.index_name[elem.get_name()] = elem
+
     def _find(self, list, elemType):
         for i in list:
             if type(i) == elemType:
                 return i
         return None
     
+    def get_by_id(self, id):
+        self.index_id[id]
+
+    def get_by_name(self, id):
+        self.index_name[id]
+
     def visit(self, context, visitor: Visitor):
+
+        visitor.visit_root(context, self)
+
         for i in self.diagrams:
             visitor.visit_diagram(context, i)
         
         for i in self.stereotypes:
             visitor.visit_stereotype(context, i)
+        
+        for i in self.primitives:
+            visitor.visit_primitive(context, i)
         
         for i in self.actors:
             visitor.visit_actor(context, i)

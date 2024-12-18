@@ -1,10 +1,11 @@
 from parser.sofa_parser import SofaParser
-from ir.model import SofaRoot, KeyValue, Struct, \
-                    Capability, Domain, Interface, Component, \
-                    Class, Import, ImportStyle, Diagram, Actor, \
-                    Relation, RelationType, Capabilities, \
-                    Domains, Interfaces, Components, Classes, \
-                    Imports, Diagrams, Actors, Relations, Stereotypes
+from ir.model import (SofaRoot, KeyValue, Struct, 
+                    Capability, Domain, Interface, Component, 
+                    Class, Import, ImportStyle, Diagram, Actor, 
+                    Relation, RelationType, Capabilities, 
+                    Domains, Interfaces, Components, Classes, 
+                    Stereotype, Primitive, 
+                    Imports, Diagrams, Actors, Relations, Stereotypes, Primitives)
 from lark import Tree, Transformer
 
 class SofaStructTransformer(Transformer):
@@ -126,7 +127,12 @@ class SofaTransformer(SofaStructTransformer):
     def _as_arch_elements(self, args, clazz):
         elems = []
         for arg in args:
-            elems.append(clazz(arg))
+            if isinstance(arg, str):
+                # All arch elements have struct. 
+                # If it is a plain string, then it is name.
+                elems.append(clazz(Struct(arg)))
+            else:
+                elems.append(clazz(arg))
         return elems
 
     def imports(self, args):
@@ -148,8 +154,14 @@ class SofaTransformer(SofaStructTransformer):
     def stereotypes(self, args):
         sts = []
         for i in args[0].children[0]:
-            sts.append(Diagram(i))
+            sts.append(Stereotype(i))
         return Stereotypes(sts)
+
+    def primitives(self, args):
+        prims = []
+        for i in args[0].children[0]:
+            prims.append(Primitive(Struct(i)))
+        return Primitives(prims)
 
     def relation_type(self, args):
         return RelationType(args[0].data.value)
@@ -158,10 +170,11 @@ class SofaTransformer(SofaStructTransformer):
         source_name = args[0].children[0]
         target_name = args[2].children[0]
         type = args[1]
-        struct = {}
+        name = f"{source_name}_{type.name}_{target_name}"
+        props = {}
         if len(args) > 3:
-            struct = args[3]
-        return Relation(type, source_name, target_name, struct)
+            props = args[3]
+        return Relation(type, source_name, target_name, Struct(name=name, properties=props))
 
     def relations(self, args):
         return Relations(args)

@@ -4,7 +4,7 @@
 %ignore WS_INLINE
 
 ?start: sofa
-sofa: (imports | actors | components | classes | interfaces | relations | stereotypes | diagrams | capabilities | domains)+
+sofa: (imports | actors | components | classes | interfaces | relations | stereotypes | primitives | diagrams | capabilities | domains)+
 
 # Terminals -----
 
@@ -92,6 +92,11 @@ imports: import+
 
 param_list: "(" vector_items* ")"
 struct: name param_list? struct_body? _NL*
+
+# ---
+
+primitive: "primitives" _COLON vector _NL*
+primitives: primitive+
 
 # ---
 component: "component" struct

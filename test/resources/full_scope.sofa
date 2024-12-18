@@ -46,9 +46,19 @@ relation PCM_DC@BR1 --> DWH@2:
 
 interface Integrable
 
+primitives: [String, Int]
+
 class Integrator:
+    literals:
+        - PENDING
+        - BACK_ORDER
     attributes:
-        - customerName
+        - customerName:
+            cardinality: 0..1
+            type: String
+        - address
+        - street:
+            cardinality: 0..*
     operations:
         - "getCustomerName(param1: String, param2: String) -> String"
         - "getCustomerNameSep(param1: String, param2: String) -> String"

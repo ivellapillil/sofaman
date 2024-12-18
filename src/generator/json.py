@@ -9,6 +9,10 @@ class JsonContext(FileContext):
 
 class JsonVisitor(Visitor):
 
+    def visit_root(self, context, sofa_root): ...
+
+    def visit_primitive(self, context, primitive): ...
+
     def visit_diagram(self, context, diagram):
         context.write(encode(diagram))
 
