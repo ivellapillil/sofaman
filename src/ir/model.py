@@ -21,6 +21,7 @@ class KeyValue(Named):
     
     def get_name(self):
         return self.key
+
 class Struct:
     def __init__(self, name, inheritance=[], properties={}):
         self.name = name
@@ -38,6 +39,7 @@ class Literal(SofaBase, Named):
 
     def get_name(self):
         return self.name
+
 class Attribute(SofaBase, Named):
 
     def __init__(self, name, value = '', type=None, lowerBound="0", upperBound="1"):
@@ -282,10 +284,10 @@ class SofaRoot:
         return None
     
     def get_by_id(self, id):
-        self.index_id[id]
+        return self.index_id[id]
 
     def get_by_name(self, id):
-        self.index_name[id]
+        return self.index_name[id]
 
     def visit(self, context, visitor: Visitor):
 

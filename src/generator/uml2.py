@@ -1,4 +1,5 @@
 
+import uuid
 from generator.generator import FileContext, Visitor
 import lxml.etree as etree
 from lxml.etree import Element, SubElement
@@ -11,6 +12,7 @@ UML = "{%s}" % NS_UML
 XMI = "{%s}" % NS_XMI
 
 NS_MAP = {
+    None: NS_UML, # Sparx EA doesn't like namespace in some elements (may be a defect)
     "xmi": NS_XMI,
     "uml": NS_UML
 }
@@ -26,33 +28,37 @@ class XmlContext(FileContext):
 
 class XmlVisitor(Visitor):
 
+    def _id_attr(self, elem, id=None):
+        elem.set(XMI + "id", id or str(uuid.uuid4()))
+
     def _packaged_element(self, parent, obj: ArchElement|str, uml_name):
         elem = SubElement(parent, UML + "packagedElement", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:"+uml_name)
-        elem.set(XMI + "id", obj.id)
+        self._id_attr(elem, obj.id)
         elem.set("name", obj.struct.name)
         return elem
 
     def _owned_literal(self, parent, obj, name):
         elem = SubElement(parent, UML + "ownedLiteral", nsmap=NS_MAP)
         elem.set("name", name)
-        elem.set(XMI + "id", obj.id)
+        self._id_attr(elem, obj.id)
         return elem
 
     def _owned_attribute(self, parent, attr):
         elem = SubElement(parent, UML + "ownedAttribute", nsmap=NS_MAP)
-        elem.set(XMI + "id", attr.id)
+        self._id_attr(elem, attr.id)
         if isinstance(attr, str):
             elem.set("name", attr)
         elif isinstance(attr, Attribute):
             elem.set("name", attr.name)
             elem.set("value", attr.value)
+            elem.set(XMI + "type", "uml:Property")
             self._lower_value(elem, attr.lowerBound)
             self._upper_value(elem, attr.upperBound)
             if attr.type is not None:
-                attr_id = self.sofa_root.get_by_name(attr.type)
-                if attr_id is not None: 
-                    elem.set("type", attr_id)
+                arch_elem = self.sofa_root.get_by_name(attr.type)
+                if arch_elem is not None: 
+                    self._type(elem, arch_elem.id)
         else:
             raise AssertionError("Attributes must be str|dict")
         return elem
@@ -61,22 +67,24 @@ class XmlVisitor(Visitor):
         elem = SubElement(parent, UML + "lowerValue", nsmap=NS_MAP)
         elem.set(XMI+"type", "uml:LiteralInteger")
         elem.set("value", value)
+        self._id_attr(elem)
         return elem
 
     def _upper_value(self, parent, value):
         elem = SubElement(parent, UML + "upperValue", nsmap=NS_MAP)
         elem.set(XMI+"type", "uml:LiteralUnlimitedNatural")
         elem.set("value", value)
+        self._id_attr(elem)
         return elem
 
-    def _type(self, parent, type):
+    def _type(self, parent, refid):
         elem = SubElement(parent, UML + "type", nsmap=NS_MAP)
-        elem.set(XMI+"type", "uml:LiteralUnlimitedNatural")
-        elem.set("value", value)
+        elem.set(XMI+"idref", refid)
         return elem
 
     def visit_root(self, context, sofa_root):
         self.sofa_root = sofa_root
+        context.root.set(UML+"name", context.name())
 
     def visit_diagram(self, context, diagram): ...
 

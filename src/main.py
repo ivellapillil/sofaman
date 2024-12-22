@@ -9,6 +9,6 @@ with open("test/resources/full_scope.sofa") as sa:
     #print(context.get_content())
 
 with open("test/resources/full_scope.sofa") as sa:
-    context = XmlContext(None)
+    context = XmlContext("build/full_scope.xml")
     Sofa().build(sa.read(), context, XmlVisitor())
     print(context.get_root_as_string())

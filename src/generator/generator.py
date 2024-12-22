@@ -1,5 +1,6 @@
 from ir.model import SofaRoot, Visitor
 from typing import Protocol
+import pathlib
 
 class Context(Protocol):
     def write(self, content): raise NotImplementedError
@@ -24,6 +25,9 @@ class FileContext(Context):
         # Yes, a very naive implementation for the moment
         with open(self.out_file) as o:
             o.write(content)
+    
+    def name(self):
+        return pathlib.PurePath(self.out_file).stem
 
 class Generator:
 
