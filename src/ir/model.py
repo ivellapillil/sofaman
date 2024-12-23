@@ -13,6 +13,7 @@ class Named(Protocol):
 
     @abstractmethod
     def get_name(self) -> str: ...
+
 class KeyValue(Named):
     
     def __init__(self, key, value):
@@ -106,6 +107,10 @@ class Imports(ArchElementList):
 class ImportStyle(Import): 
     def __init__(self, file_name):
         super().__init__(file_name)
+
+class Module(ArchElement): 
+    def __init__(self, struct):
+        super().__init__(struct)
 
 class Actor(ArchElement): 
     def __init__(self, struct):

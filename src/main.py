@@ -1,7 +1,7 @@
 from sofa import Sofa
 from generator.generator import BufferContext
 from generator.json import JsonVisitor
-from generator.uml2 import XmlVisitor, XmlContext
+from generator.uml2 import XmiVisitor, XmiContext, XmiFlavor
 
 with open("test/resources/full_scope.sofa") as sa:
     context = BufferContext()
@@ -9,6 +9,6 @@ with open("test/resources/full_scope.sofa") as sa:
     #print(context.get_content())
 
 with open("test/resources/full_scope.sofa") as sa:
-    context = XmlContext("build/full_scope.xml")
-    Sofa().build(sa.read(), context, XmlVisitor())
+    context = XmiContext("build/full_scope.xml", mode=XmiFlavor.SPARX_EA)
+    Sofa().build(sa.read(), context, XmiVisitor())
     print(context.get_root_as_string())

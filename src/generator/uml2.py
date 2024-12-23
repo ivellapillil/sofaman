@@ -3,10 +3,11 @@ import uuid
 from generator.generator import FileContext, Visitor
 import lxml.etree as etree
 from lxml.etree import Element, SubElement
-from ir.model import Attribute, ArchElement
+from ir.model import Attribute, ArchElement, Module, Struct
+from enum import Enum
 
-NS_UML = "http://www.eclipse.org/uml2/4.0.0/UML"
-NS_XMI = "http://www.omg.org/spec/XMI/20110701"
+NS_UML = "http://schema.omg.org/spec/UML/2.1"
+NS_XMI = "http://schema.omg.org/spec/XMI/2.1"
 
 UML = "{%s}" % NS_UML
 XMI = "{%s}" % NS_XMI
@@ -17,16 +18,42 @@ NS_MAP = {
     "uml": NS_UML
 }
 
-class XmlContext(FileContext):
+class XmiFlavor:
+    NORMAL = 1
+    SPARX_EA = 2
 
-    def __init__(self, out_file):
+class XmiContext(FileContext):
+
+    def __init__(self, out_file, mode=XmiFlavor.NORMAL):
         super().__init__(out_file)
-        self.root = Element(UML + "Model", nsmap=NS_MAP)
+        self.mode = mode
+        self.root = Element(XMI + "XMI", nsmap=NS_MAP)
+
+        if self.is_sparx_ea():
+            # The following elements are necessary in order for EA to recognize the types 
+            # referenced in attributes. 
+            self.doc = SubElement(self.root, XMI + "Documentation", nsmap=NS_MAP)
+            self.doc.set(XMI + "exporter", "Enterprise Architect")
+            self.doc.set(XMI + "exporterVersion", "6.5")
+            self.doc.set(XMI + "exporterId", "1")
+
+            # For some reason Sparx XMI Importer expects "uml:" namespace only on "Model" element.
+            spx_nsmap = NS_MAP.copy()
+            spx_nsmap.pop(None)
+            self.umlModel = SubElement(self.root, UML + "Model", nsmap=spx_nsmap)
+        else:
+            self.umlModel = SubElement(self.root, UML + "Model", nsmap=NS_MAP)
+
+        self.umlModel.set(XMI + "type", "uml:Model")
+        self.contentRoot = self.umlModel
+
+    def is_sparx_ea(self):
+        return self.mode == XmiFlavor.SPARX_EA
 
     def get_root_as_string(self):
         return str(etree.tostring(self.root, pretty_print=True), encoding="UTF8")
 
-class XmlVisitor(Visitor):
+class XmiVisitor(Visitor):
 
     def _id_attr(self, elem, id=None):
         elem.set(XMI + "id", id or str(uuid.uuid4()))
@@ -84,19 +111,22 @@ class XmlVisitor(Visitor):
 
     def visit_root(self, context, sofa_root):
         self.sofa_root = sofa_root
-        context.root.set(UML+"name", context.name())
+        if context.is_sparx_ea():
+            # Need an outer package for EA.
+            elem = self._packaged_element(context.contentRoot, Module(Struct(context.name())), "Package")
+            context.contentRoot = elem
 
     def visit_diagram(self, context, diagram): ...
 
     def visit_stereotype(self, context, stereotype): ...
 
     def visit_primitive(self, context, primitive): 
-        self._packaged_element(context.root, primitive, "PrimitiveType")
+        self._packaged_element(context.contentRoot, primitive, "PrimitiveType")
     
     def visit_actor(self, context, actor): ...
 
     def visit_component(self, context, component):
-        elem = self._packaged_element(context.root, component, "Component")
+        elem = self._packaged_element(context.contentRoot, component, "Component")
     
     def visit_relation(self, context, relation): ...
 
@@ -105,7 +135,7 @@ class XmlVisitor(Visitor):
 
     
     def visit_class(self, context, clazz):
-        elem = self._packaged_element(context.root, clazz, "Class")
+        elem = self._packaged_element(context.contentRoot, clazz, "Class")
         lits = clazz.literals()
         for i in lits:
             if type(i) is not str: raise AssertionError("Literals must be strings")
