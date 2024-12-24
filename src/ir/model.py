@@ -150,6 +150,18 @@ class Relation(ArchElement):
         self.type = type
         self.source = source
         self.target = target
+    
+    def is_bidirectional(self):
+        return (self.type == RelationType.BI_ASSOCIATION 
+            or self.type == RelationType.BI_INFO_FLOW)
+
+    def is_association(self):
+        return (self.type == RelationType.BI_ASSOCIATION 
+            or self.type == RelationType.ASSOCIATION)
+
+    def is_information_flow(self):
+        return (self.type == RelationType.INFORMATION_FLOW 
+            or self.type == RelationType.BI_INFO_FLOW)
 
 class Relations(ArchElementList):
     def __init__(self, elems):
@@ -157,10 +169,11 @@ class Relations(ArchElementList):
 
 class RelationType(Enum):
     ASSOCIATION = "association"
-    BIDIRECTIONAL = "bidirectional"
     INHERITANCE = "inheritance"
     INFORMATION_FLOW = "information_flow"
     REALIZATION = "realization"
+    BI_ASSOCIATION = "bidirectional_association"
+    BI_INFO_FLOW = "bidirectional_inflow"
 
 class Stereotype(Named): 
 
@@ -291,8 +304,8 @@ class SofaRoot:
     def get_by_id(self, id):
         return self.index_id[id]
 
-    def get_by_name(self, id):
-        return self.index_name[id]
+    def get_by_name(self, name):
+        return self.index_name[name]
 
     def visit(self, context, visitor: Visitor):
 

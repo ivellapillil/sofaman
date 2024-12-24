@@ -3,7 +3,7 @@ import uuid
 from generator.generator import FileContext, Visitor
 import lxml.etree as etree
 from lxml.etree import Element, SubElement
-from ir.model import Attribute, ArchElement, Module, Struct
+from ir.model import Attribute, ArchElement, Module, Struct, RelationType
 from enum import Enum
 
 NS_UML = "http://schema.omg.org/spec/UML/2.1"
@@ -55,20 +55,34 @@ class XmiContext(FileContext):
 
 class XmiVisitor(Visitor):
 
+    def __init__(self):
+        super().__init__()
+        self.registry = {}
+    
+    def _register(self, obj, elem):
+        self.registry[obj] = elem
+    
+    def _lookup(self, obj):
+        return self.registry[obj]
+
     def _id_attr(self, elem, id=None):
-        elem.set(XMI + "id", id or str(uuid.uuid4()))
+        id_val = id or str(uuid.uuid4())
+        elem.set(XMI + "id", id_val)
+        return id_val
 
     def _packaged_element(self, parent, obj: ArchElement|str, uml_name):
         elem = SubElement(parent, UML + "packagedElement", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:"+uml_name)
         self._id_attr(elem, obj.id)
         elem.set("name", obj.struct.name)
+        self._register(obj, elem)
         return elem
 
     def _owned_literal(self, parent, obj, name):
         elem = SubElement(parent, UML + "ownedLiteral", nsmap=NS_MAP)
         elem.set("name", name)
         self._id_attr(elem, obj.id)
+        self._register(obj, elem)
         return elem
 
     def _owned_attribute(self, parent, attr):
@@ -88,6 +102,15 @@ class XmiVisitor(Visitor):
                     self._type(elem, arch_elem.id)
         else:
             raise AssertionError("Attributes must be str|dict")
+        self._register(attr, elem)
+        return elem
+
+    def _owned_association_attribute(self, parent, obj, relation):
+        elem = SubElement(parent, UML + "ownedAttribute", nsmap=NS_MAP)
+        self._id_attr(elem)
+        elem.set("association", relation.id)
+        self._type(elem, obj.id)
+        # No registration as it is an attribute that is specific to XMI structure
         return elem
 
     def _lower_value(self, parent, value):
@@ -95,6 +118,7 @@ class XmiVisitor(Visitor):
         elem.set(XMI+"type", "uml:LiteralInteger")
         elem.set("value", value)
         self._id_attr(elem)
+        # No registration as it is an attribute that is specific to XMI structure
         return elem
 
     def _upper_value(self, parent, value):
@@ -102,11 +126,29 @@ class XmiVisitor(Visitor):
         elem.set(XMI+"type", "uml:LiteralUnlimitedNatural")
         elem.set("value", value)
         self._id_attr(elem)
+        # No registration as it is an attribute that is specific to XMI structure
         return elem
 
     def _type(self, parent, refid):
         elem = SubElement(parent, UML + "type", nsmap=NS_MAP)
         elem.set(XMI+"idref", refid)
+        # No registration as it is an attribute that is specific to XMI structure
+        return elem
+
+    def _owned_end(self, parent, rel_refid, obj_refid):
+        elem = SubElement(parent, UML + "ownedEnd", nsmap=NS_MAP)
+        elem.set(XMI+"association", rel_refid)
+
+        type = SubElement(elem, UML + "type", nsmap=NS_MAP)
+        type.set(XMI+"idref", obj_refid)
+
+        # No registration as it is an attribute that is specific to XMI structure
+        return elem
+
+    def _member_end(self, parent, owned_end_refid):
+        elem = SubElement(parent, UML + "memberEnd", nsmap=NS_MAP)
+        elem.set(XMI+"idref", owned_end_refid)
+        # No registration as it is an attribute that is specific to XMI structure
         return elem
 
     def visit_root(self, context, sofa_root):
@@ -128,12 +170,41 @@ class XmiVisitor(Visitor):
     def visit_component(self, context, component):
         elem = self._packaged_element(context.contentRoot, component, "Component")
     
-    def visit_relation(self, context, relation): ...
+    def _get_rel_type(self, relation):
+        if relation.is_association():
+            return "Association"
+        elif relation.is_information_flow():
+            return "Information"
+        else:
+            return "Unknown"
 
+    def visit_relation(self, context, relation): 
+        elem = self._packaged_element(context.contentRoot, relation, self._get_rel_type(relation))
+        src = relation.source
+        tgt = relation.target
+
+        src_obj = self.sofa_root.get_by_name(src)
+        tgt_obj = self.sofa_root.get_by_name(tgt)
+
+        src_owned_e = self._owned_end(elem, relation.id, src_obj.id)
+        src_id_attr_val = self._id_attr(src_owned_e)
+        self._member_end(elem, src_id_attr_val)
+
+        corres_src_elem = self._lookup(src_obj)
+        src_owned_attr = self._owned_association_attribute(corres_src_elem, tgt_obj, relation)
+        self._member_end(elem, src_owned_attr.attrib[f"{XMI}id"])
+
+        if relation.is_bidirectional():
+            tgt_owned_e = self._owned_end(elem, relation.id, tgt_obj.id)
+            tgt_id_attr_val = self._id_attr(tgt_owned_e)
+            #self._member_end(elem, tgt_id_attr_val)
+
+            corres_tgt_elem = self._lookup(tgt_obj)
+            tgt_owned_attr = self._owned_association_attribute(corres_tgt_elem, src_obj, relation)
+            self._member_end(elem, tgt_owned_attr.attrib[f"{XMI}id"])
     
     def visit_interface(self, context, interface): ...
 
-    
     def visit_class(self, context, clazz):
         elem = self._packaged_element(context.contentRoot, clazz, "Class")
         lits = clazz.literals()

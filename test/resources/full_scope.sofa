@@ -30,6 +30,7 @@ component PCM_DC_Base:
         - CDM
 
 component Suitability
+component DWH
 
 relation Suitability <--> PCM_DC
 

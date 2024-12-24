@@ -59,15 +59,16 @@ actors: actor+
 
 # ---
 association: "-->"
-bidirectional: "<-->"
+bidirectional_association: "<-->"
 inheritance: "--|>"
 information_flow: "..>"
+bidirectional_inflow: "<..>"
 realization: "..|>"
 
 port: _AT (CNAME|NUMBER)
 relation_name: name port?
 
-relation_type: (association | bidirectional | inheritance | information_flow | realization)
+relation_type: (association | bidirectional_association | bidirectional_inflow | inheritance | information_flow | realization)
 
 relation: "relation" relation_name relation_type relation_name struct_body? _NL*
 relations: relation+
