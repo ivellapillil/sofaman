@@ -50,7 +50,7 @@ class XmiContext(FileContext):
     def is_sparx_ea(self):
         return self.mode == XmiFlavor.SPARX_EA
 
-    def get_root_as_string(self):
+    def get_content(self):
         return str(etree.tostring(self.root, pretty_print=True), encoding="UTF8")
 
 class XmiVisitor(Visitor):

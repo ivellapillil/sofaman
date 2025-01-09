@@ -5,7 +5,6 @@ from generator.generator import Generator
 class _Cached:
     ir = SofaIR()
 
-
 class Sofa:
 
     def __init__(self):
