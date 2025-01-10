@@ -23,9 +23,12 @@ class FileContext(Context):
 
     def write(self, content):
         # Yes, a very naive implementation for the moment
-        with open(self.out_file) as o:
+        with open(self.out_file, "a") as o:
             o.write(content)
     
+    def write_ln(self, content):
+        self.write(content + "\n")
+
     def name(self):
         return pathlib.PurePath(self.out_file).stem
 

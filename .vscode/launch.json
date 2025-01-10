@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: Main.py with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--input_file=test/resources/full_scope.sofa",
+                "--output_file=out.puml",
+                "--type=puml",
+                "build"
+            ]
+        },
+        {
             "name": "Python Debugger: main.py",
             "type": "debugpy",
             "request": "launch",

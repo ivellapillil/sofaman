@@ -1,0 +1,19 @@
+@startuml
+allowmixing
+class String
+class  Int
+actor User
+component PCM_DC
+component PCM_DC_Base
+component Suitability
+component DWH
+Suitability <--> PCM_DC
+PCM_DC --> DWH
+interface Integrable
+class Integrator
+{
+    String customerName
+    address
+    street
+}
+@enduml

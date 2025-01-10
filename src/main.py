@@ -6,6 +6,7 @@ from sofa import Sofa
 from generator.generator import BufferContext
 from generator.json import JsonVisitor
 from generator.uml2 import XmiVisitor, XmiContext, XmiFlavor
+from generator.plantuml import PumlVisitor, PumlContext
 
 class SofRun:
    
@@ -25,11 +26,14 @@ class SofRun:
                 case "xmi":
                     context = XmiContext(self.output_file, mode=XmiFlavor.SPARX_EA)
                     visitor = XmiVisitor()
+                case "puml":
+                    context = PumlContext(self.output_file)
+                    visitor = PumlVisitor()
                 case _:
                     raise f"Unknown type {self.type}"
 
             Sofa().build(sa.read(), context, visitor)
-            print(context.get_content())
+            if self.type == "xmi": print(context.get_content())
 
 if __name__ == '__main__':
   fire.Fire(SofRun)

@@ -268,6 +268,9 @@ class Visitor(Protocol):
     @abstractmethod
     def visit_capability(self, context, capability): raise NotImplementedError
 
+    @abstractmethod
+    def visit_end(self, context, sofa_root): raise NotImplementedError
+
 # ----
 class SofaRoot:
     def __init__(self, children):
@@ -340,3 +343,6 @@ class SofaRoot:
 
         for i in self.capabilities:
             visitor.visit_capability(context, i)
+
+        # End of the visiting
+        visitor.visit_end(context, self)
