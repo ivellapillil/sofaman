@@ -14,23 +14,23 @@ class PumlVisitor(Visitor):
     INDENT = " " * 4
 
     def visit_root(self, context, sofa_root): 
-        context.write_ln(f"@startuml {context.name()}\nallowmixing\n")
+        context.write_ln(f"@startuml {context.name()}\nallowmixing")
 
     def visit_primitive(self, context, primitive): 
-        context.write_ln(f"class {primitive.get_name()}\n")
+        context.write_ln(f"\nclass {primitive.get_name()}\n")
 
     def visit_diagram(self, context, diagram): ...
 
     def visit_stereotype(self, context, stereotype): ...
     
     def visit_actor(self, context, actor): 
-        context.write_ln(f"actor {actor.get_name()}\n")
+        context.write_ln(f"\nactor {actor.get_name()}")
 
     def visit_component(self, context, component):
-        context.write_ln(f"component {component.get_name()}\n")
+        context.write_ln(f"\ncomponent {component.get_name()}")
     
     def visit_relation(self, context, relation): 
-        context.write_ln(f"{relation.source} {self._as_arrow(context, relation)} {relation.target}\n")
+        context.write_ln(f"\n{relation.source} {self._as_arrow(context, relation)} {relation.target}")
     
     def _as_arrow(self, context, relation):
         match relation.type:
@@ -46,14 +46,15 @@ class PumlVisitor(Visitor):
                 return "--"
     
     def visit_interface(self, context, interface): 
-        context.write_ln(f"interface {interface.get_name()}\n")
-    
+        context.write_ln(f"\ninterface {interface.get_name()}")
+        self._gen_attributes(context, interface)
+
     def visit_class(self, context, clazz): 
-        context.write_ln(f"class {clazz.get_name()}")
-        attrs = clazz.attributes()
-        self._gen_attributes(context, attrs)
+        context.write_ln(f"\nclass {clazz.get_name()}")
+        self._gen_attributes(context, clazz)
         
-    def _gen_attributes(self, context, attrs):
+    def _gen_attributes(self, context, obj):
+        attrs = obj.attributes()
 
         if not attrs: return
 
@@ -69,11 +70,11 @@ class PumlVisitor(Visitor):
             else:
                 raise AssertionError("Attributes must be str|dict")
 
-        context.write_ln("}\n")
+        context.write_ln("}")
 
     def visit_domain(self, context, domain): ...
     
     def visit_capability(self, context, capability): ...
 
     def visit_end(self, context, sofa_root): 
-        context.write_ln("@enduml\n")
+        context.write_ln("\n@enduml")

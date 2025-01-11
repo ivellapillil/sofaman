@@ -68,7 +68,10 @@ class ArchElement(SofaBase, Named):
 
     def attributes(self):
         props = self.struct.properties
+
+        if not "attributes" in props: return None
         attrs = props['attributes']
+
         if attrs is None: return None
         ret = []
         for i in attrs:
