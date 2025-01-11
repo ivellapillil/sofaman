@@ -26,7 +26,7 @@ class FileContext(Context):
         with open(self.out_file, "a") as o:
             o.write(content)
     
-    def write_ln(self, content):
+    def write_ln(self, content = ""):
         self.write(content + "\n")
 
     def name(self):

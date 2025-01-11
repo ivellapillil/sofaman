@@ -14,23 +14,23 @@ class PumlVisitor(Visitor):
     INDENT = " " * 4
 
     def visit_root(self, context, sofa_root): 
-        context.write_ln("@startuml\nallowmixing")
+        context.write_ln(f"@startuml {context.name()}\nallowmixing\n")
 
     def visit_primitive(self, context, primitive): 
-        context.write_ln(f"class {primitive.get_name()}")
+        context.write_ln(f"class {primitive.get_name()}\n")
 
     def visit_diagram(self, context, diagram): ...
 
     def visit_stereotype(self, context, stereotype): ...
     
     def visit_actor(self, context, actor): 
-        context.write_ln(f"actor {actor.get_name()}")
+        context.write_ln(f"actor {actor.get_name()}\n")
 
     def visit_component(self, context, component):
-        context.write_ln(f"component {component.get_name()}")
+        context.write_ln(f"component {component.get_name()}\n")
     
     def visit_relation(self, context, relation): 
-        context.write_ln(f"{relation.source} {self._as_arrow(context, relation)} {relation.target}")
+        context.write_ln(f"{relation.source} {self._as_arrow(context, relation)} {relation.target}\n")
     
     def _as_arrow(self, context, relation):
         match relation.type:
@@ -46,7 +46,7 @@ class PumlVisitor(Visitor):
                 return "--"
     
     def visit_interface(self, context, interface): 
-        context.write_ln(f"interface {interface.get_name()}")
+        context.write_ln(f"interface {interface.get_name()}\n")
     
     def visit_class(self, context, clazz): 
         context.write_ln(f"class {clazz.get_name()}")
@@ -69,11 +69,11 @@ class PumlVisitor(Visitor):
             else:
                 raise AssertionError("Attributes must be str|dict")
 
-        context.write_ln("}")
+        context.write_ln("}\n")
 
     def visit_domain(self, context, domain): ...
     
     def visit_capability(self, context, capability): ...
 
     def visit_end(self, context, sofa_root): 
-        context.write_ln("@enduml")
+        context.write_ln("@enduml\n")

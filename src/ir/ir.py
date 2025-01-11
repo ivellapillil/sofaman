@@ -129,7 +129,7 @@ class SofaTransformer(SofaStructTransformer):
         for arg in args:
             if isinstance(arg, str):
                 # All arch elements have struct. 
-                # If it is a plain string, then it is name.
+                # If it is a plain string, then it is just a name.
                 elems.append(clazz(Struct(arg)))
             else:
                 elems.append(clazz(arg))
