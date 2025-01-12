@@ -74,7 +74,7 @@ class PumlVisitor(Visitor):
         self._gen_attributes(context, interface)
 
     def visit_class(self, context, clazz): 
-        context.write_ln(f"\nclass {clazz.get_name()}")
+        context.write(f"\nclass {clazz.get_name()}")
         self._gen_attributes(context, clazz)
         
     def _gen_attributes(self, context, obj):
