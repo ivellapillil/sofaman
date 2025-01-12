@@ -6,4 +6,6 @@ class Chair
 
 interface Furniture
 
+component Table
+
 relation Table --> Chair

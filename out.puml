@@ -1,0 +1,13 @@
+@startuml out
+allowmixing
+
+actor Eve
+
+component House
+Table --> Chair
+
+interface Furniture
+
+class Chair
+
+@enduml

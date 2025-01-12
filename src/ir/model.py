@@ -382,35 +382,45 @@ class SofaRoot:
 
         visitor.visit_root(context, self)
 
-        for i in self.diagrams:
-            visitor.visit_diagram(context, i)
+        if self.diagrams:
+            for i in self.diagrams:
+                visitor.visit_diagram(context, i)
         
-        for i in self.stereotypes:
-            visitor.visit_stereotype(context, i)
+        if self.stereotypes:
+            for i in self.stereotypes:
+                visitor.visit_stereotype(context, i)
         
-        for i in self.primitives:
-            visitor.visit_primitive(context, i)
-        
-        for i in self.actors:
-            visitor.visit_actor(context, i)
-        
-        for i in self.components:
-            visitor.visit_component(context, i)
-        
-        for i in self.relations:
-            visitor.visit_relation(context, i)
-        
-        for i in self.interfaces:
-            visitor.visit_interface(context, i)
-        
-        for i in self.classes:
-            visitor.visit_class(context, i)
-        
-        for i in self.domains:
-            visitor.visit_domain(context, i)
+        if self.primitives:
+            for i in self.primitives:
+                visitor.visit_primitive(context, i)
 
-        for i in self.capabilities:
-            visitor.visit_capability(context, i)
+        if self.actors:        
+            for i in self.actors:
+                visitor.visit_actor(context, i)
+        
+        if self.components:
+            for i in self.components:
+                visitor.visit_component(context, i)
+        
+        if self.relations:
+            for i in self.relations:
+                visitor.visit_relation(context, i)
+        
+        if self.interfaces:
+            for i in self.interfaces:
+                visitor.visit_interface(context, i)
+        
+        if self.classes:
+            for i in self.classes:
+                visitor.visit_class(context, i)
+        
+        if self.domains:
+            for i in self.domains:
+                visitor.visit_domain(context, i)
+
+        if self.capabilities:
+            for i in self.capabilities:
+                visitor.visit_capability(context, i)
 
         # End of the visiting
         visitor.visit_end(context, self)
