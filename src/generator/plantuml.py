@@ -1,6 +1,6 @@
 
 from generator.generator import FileContext, Visitor
-from ir.model import RelationType, Attribute
+from ir.model import RelationType, Attribute, Port
 
 class PumlContext(FileContext):
 
@@ -13,11 +13,15 @@ class PumlVisitor(Visitor):
 
     INDENT = " " * 4
 
+    # In general the rendering puts newline in at first instead of later,
+    # this is because PlantUML is a bit finicky on braces on a new line.
+    # Putting newline in front avoids some conditional checks.
+
     def visit_root(self, context, sofa_root): 
         context.write_ln(f"@startuml {context.name()}\nallowmixing")
 
     def visit_primitive(self, context, primitive): 
-        context.write_ln(f"\nclass {primitive.get_name()}\n")
+        context.write_ln(f"\nclass {primitive.get_name()}")
 
     def visit_diagram(self, context, diagram): ...
 
@@ -27,10 +31,30 @@ class PumlVisitor(Visitor):
         context.write_ln(f"\nactor {actor.get_name()}")
 
     def visit_component(self, context, component):
-        context.write_ln(f"\ncomponent {component.get_name()}")
-    
+        context.write(f"\ncomponent {component.get_name()}")
+        self._gen_ports(context, component)
+
+    def _gen_ports(self, context, obj):
+        ports = obj.list_values("ports", Port)
+
+        if not ports: return
+
+        context.write_ln("{")
+
+        for port in ports:
+            context.write(self.INDENT)
+            context.write_ln(f"port {port.get_name()}")
+
+        context.write_ln("}")
+
     def visit_relation(self, context, relation): 
-        context.write_ln(f"\n{relation.source} {self._as_arrow(context, relation)} {relation.target}")
+        context.write_ln(f"\n{self._determine_source(context, relation)} {self._as_arrow(context, relation)} {self._determine_target(context, relation)}")
+    
+    def _determine_source(self, context, relation):
+        return relation.source_port.get_name() if relation.source_port else relation.source
+    
+    def _determine_target(self, context, relation):
+        return relation.target_port.get_name() if relation.target_port else relation.target
     
     def _as_arrow(self, context, relation):
         match relation.type:

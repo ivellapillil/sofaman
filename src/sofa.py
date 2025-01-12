@@ -14,4 +14,5 @@ class Sofa:
         return self._generate(_Cached.ir.build(content), context, visitor)
     
     def _generate(self, sofa_root, context, visitor):
+        sofa_root.validate()
         return Generator().generate(sofa_root, context, visitor)

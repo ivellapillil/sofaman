@@ -2,7 +2,7 @@ from parser.sofa_parser import SofaParser
 from ir.model import (SofaRoot, KeyValue, Struct, 
                     Capability, Domain, Interface, Component, 
                     Class, Import, ImportStyle, Diagram, Actor, 
-                    Relation, RelationType, Capabilities, 
+                    Relation, RelationType, Port, Capabilities, 
                     Domains, Interfaces, Components, Classes, 
                     Stereotype, Primitive, 
                     Imports, Diagrams, Actors, Relations, Stereotypes, Primitives)
@@ -107,13 +107,13 @@ class SofaTransformer(SofaStructTransformer):
         return args[0]
     
     def classes(self, args):
-        return Classes(self._as_arch_elements(args, Component))
+        return Classes(self._as_arch_elements(args, Class))
 
     def clazz(self, args):
         return args[0]
     
     def components(self, args):
-        return Components(self._as_arch_elements(args, Class))
+        return Components(self._as_arch_elements(args, Component))
 
     def component(self, args):
         return args[0]
@@ -165,16 +165,27 @@ class SofaTransformer(SofaStructTransformer):
 
     def relation_type(self, args):
         return RelationType(args[0].data.value)
+    
+    def port(self, args):
+        return Port(args[0])
 
     def relation(self, args):
         source_name = args[0].children[0]
+        source_port = None
+        if len(args[0].children) > 1:
+            source_port = args[0].children[1]
+
         target_name = args[2].children[0]
+        target_port = None
+        if len(args[2].children) > 1:
+            target_port = args[2].children[1]
+
         type = args[1]
         name = f"{source_name}_{type.name}_{target_name}"
         props = {}
         if len(args) > 3:
             props = args[3]
-        return Relation(type, source_name, target_name, Struct(name=name, properties=props))
+        return Relation(type, source_name, source_port, target_name, target_port, Struct(name=name, properties=props))
 
     def relations(self, args):
         return Relations(args)

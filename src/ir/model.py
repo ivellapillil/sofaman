@@ -14,6 +14,9 @@ class Named(Protocol):
     @abstractmethod
     def get_name(self) -> str: ...
 
+    def __repr__(self):
+        return self.get_name()
+
 class KeyValue(Named):
     
     def __init__(self, key, value):
@@ -37,6 +40,14 @@ class Literal(SofaBase, Named):
     def __init__(self, name, value = ''):
         self.name = name
         self.value = value
+
+    def get_name(self):
+        return self.name
+
+class Port(SofaBase, Named):
+
+    def __init__(self, name):
+        self.name = name
 
     def get_name(self):
         return self.name
@@ -90,6 +101,22 @@ class ArchElement(SofaBase, Named):
                 raise AssertionError("Type of attribute must be str|keyvalue")
         return ret
 
+    def list_values(self, prop_name, value_class):
+        props = self.struct.properties
+
+        if not prop_name in props: return None
+        values = props[prop_name]
+
+        if values is None: return None
+        ret = []
+        for i in values:
+            if isinstance(i, str):
+                ret.append(value_class(i))
+            else:
+                raise AssertionError("Type of value must be str")
+        return ret
+
+
 class ArchElementList():
     def __init__(self, elems):
         self.elems = elems
@@ -126,6 +153,9 @@ class Actors(ArchElementList):
 class Component(ArchElement): 
     def __init__(self, struct):
         super().__init__(struct)
+    
+    def ports(self):
+        return self.list_values("ports", Port)
 
 class Components(ArchElementList):
     def __init__(self, elems):
@@ -148,11 +178,13 @@ class Interfaces(ArchElementList):
         super().__init__(elems)
 
 class Relation(ArchElement): 
-    def __init__(self, type, source, target, struct):
+    def __init__(self, type, source, source_port, target, target_port, struct):
         super().__init__(struct)
         self.type = type
         self.source = source
+        self.source_port = source_port
         self.target = target
+        self.target_port=  target_port
     
     def is_bidirectional(self):
         return (self.type == RelationType.BI_ASSOCIATION 
@@ -274,9 +306,39 @@ class Visitor(Protocol):
     @abstractmethod
     def visit_end(self, context, sofa_root): raise NotImplementedError
 
+# ---- 
+
+class ValidationError(Exception): ...
+
+class Validator:
+
+    def validate(self, sofa_root):
+        # Ensure name and ports are defined when used in relations.
+        for rel in sofa_root.relations:
+            source_def = sofa_root.get_by_name(rel.source)
+            if not source_def: 
+                raise ValidationError(f"Relation {rel} references obj {rel.source}, but is not defined")
+            if isinstance(source_def, Component):
+                source_port = rel.source_port
+                if source_port and (source_def.ports() is None 
+                                    or not filter(lambda p: (p.get_name()), source_def.ports())): 
+                    raise ValidationError(f"Relation {rel} references source port {source_port}, but is not defined in {source_def}")
+
+            target_def = sofa_root.get_by_name(rel.target)
+            if not target_def: 
+                raise ValidationError(f"Relation {rel} references obj {rel.target}, but is not defined")
+            if isinstance(target_def, Component):
+                target_port = rel.target_port
+                if target_port and (target_def.ports() is None
+                                    or not filter(lambda p: (p.get_name()), target_def.ports())): 
+                    raise ValidationError(f"Relation {rel} references source port {target_port}, but is not defined in {target_def}")
+
+
 # ----
 class SofaRoot:
     def __init__(self, children):
+        self.children = children
+
         self.imports = self._find(children, Imports)
         self.diagrams = self._find(children, Diagrams)
         self.stereotypes = self._find(children, Stereotypes)
@@ -312,6 +374,9 @@ class SofaRoot:
 
     def get_by_name(self, name):
         return self.index_name[name]
+    
+    def validate(self):
+        Validator().validate(self)
 
     def visit(self, context, visitor: Visitor):
 
