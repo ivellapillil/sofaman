@@ -53,6 +53,9 @@ class XmiContext(FileContext):
     def get_content(self):
         return str(etree.tostring(self.root, pretty_print=True), encoding="UTF8")
 
+    def flush(self):
+        self.write(self.get_content())
+
 class XmiVisitor(Visitor):
 
     def __init__(self):
@@ -221,4 +224,7 @@ class XmiVisitor(Visitor):
     
     def visit_capability(self, context, capability): ...
 
-    def visit_end(self, context, sofa_root): ...
+    def visit_end(self, context, sofa_root): 
+        # Write to the file. 
+        # TODO: Should it be here? Probably not.
+        context.flush()

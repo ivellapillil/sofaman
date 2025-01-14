@@ -8,6 +8,8 @@ from generator.json import JsonVisitor
 from generator.uml2 import XmiVisitor, XmiContext, XmiFlavor
 from generator.plantuml import PumlVisitor, PumlContext
 
+class SofaException(Exception): ...
+
 class SofRun:
    
     def __init__(self, input_file, output_file, type="xmi"):
@@ -30,10 +32,9 @@ class SofRun:
                     context = PumlContext(self.output_file)
                     visitor = PumlVisitor()
                 case _:
-                    raise f"Unknown type {self.type}"
+                    raise SofaException(f"Unknown type {self.type}")
 
             Sofa().build(sa.read(), context, visitor)
-            if self.type == "xmi": print(context.get_content())
 
 if __name__ == '__main__':
   fire.Fire(SofRun)

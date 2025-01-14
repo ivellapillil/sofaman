@@ -1,0 +1,31 @@
+#
+# Sample sofa model that exercises all the supported elements.
+#
+
+import "simple_all.sofa"
+import style "default.css"
+
+actor Client
+actor RelationshipManager
+
+class Person:
+    attributes:
+        name: 
+            cardinality: 1
+            type: String
+    operations:
+        - "getName() -> String"
+
+interface Product:
+    attributes:
+        name: 
+            cardinality: 1
+            type: String
+        is_active:
+            cardinality: 0..1
+            type: Boolean
+
+relation Person --> Product:
+    source_cardinality: 0..1
+    target_cardinality: 1..1
+

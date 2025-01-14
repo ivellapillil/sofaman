@@ -271,40 +271,40 @@ class Domain(ArchElement):
 class Visitor(Protocol):
 
     @abstractmethod
-    def visit_root(self, context, sofa_root): raise NotImplementedError
+    def visit_root(self, context, sofa_root): raise NotImplementedError()
 
     @abstractmethod
-    def visit_diagram(self, context, diagram): raise NotImplementedError
+    def visit_diagram(self, context, diagram): raise NotImplementedError()
 
     @abstractmethod
-    def visit_stereotype(self, context, stereotype): raise NotImplementedError
+    def visit_stereotype(self, context, stereotype): raise NotImplementedError()
 
     @abstractmethod
-    def visit_primitive(self, context, primitive): raise NotImplementedError
+    def visit_primitive(self, context, primitive): raise NotImplementedError()
 
     @abstractmethod
-    def visit_actor(self, context, actor): raise NotImplementedError
+    def visit_actor(self, context, actor): raise NotImplementedError()
 
     @abstractmethod
-    def visit_component(self, context, component): raise NotImplementedError
+    def visit_component(self, context, component): raise NotImplementedError()
 
     @abstractmethod
-    def visit_relation(self, context, relation): raise NotImplementedError
+    def visit_relation(self, context, relation): raise NotImplementedError()
 
     @abstractmethod
-    def visit_interface(self, context, interface): raise NotImplementedError
+    def visit_interface(self, context, interface): raise NotImplementedError()
 
     @abstractmethod
-    def visit_class(self, context, clazz): raise NotImplementedError
+    def visit_class(self, context, clazz): raise NotImplementedError()
 
     @abstractmethod
-    def visit_domain(self, context, domain): raise NotImplementedError
+    def visit_domain(self, context, domain): raise NotImplementedError()
 
     @abstractmethod
-    def visit_capability(self, context, capability): raise NotImplementedError
+    def visit_capability(self, context, capability): raise NotImplementedError()
 
     @abstractmethod
-    def visit_end(self, context, sofa_root): raise NotImplementedError
+    def visit_end(self, context, sofa_root): raise NotImplementedError()
 
 # ---- 
 
@@ -313,6 +313,12 @@ class ValidationError(Exception): ...
 class Validator:
 
     def validate(self, sofa_root):
+        self.validate_relations(sofa_root)
+
+    def validate_relations(self, sofa_root):
+        
+        if not sofa_root.relations: return
+
         # Ensure name and ports are defined when used in relations.
         for rel in sofa_root.relations:
             source_def = sofa_root.get_by_name(rel.source)
