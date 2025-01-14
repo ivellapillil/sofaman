@@ -189,19 +189,16 @@ class XmiVisitor(Visitor):
         src_obj = self.sofa_root.get_by_name(src)
         tgt_obj = self.sofa_root.get_by_name(tgt)
 
-        src_owned_e = self._owned_end(elem, relation.id, src_obj.id)
-        src_id_attr_val = self._id_attr(src_owned_e)
-        self._member_end(elem, src_id_attr_val)
+        if not relation.is_bidirectional():
+            src_owned_e = self._owned_end(elem, relation.id, src_obj.id)
+            src_id_attr_val = self._id_attr(src_owned_e)
+            self._member_end(elem, src_id_attr_val)
 
         corres_src_elem = self._lookup(src_obj)
         src_owned_attr = self._owned_association_attribute(corres_src_elem, tgt_obj, relation)
         self._member_end(elem, src_owned_attr.attrib[f"{XMI}id"])
 
         if relation.is_bidirectional():
-            tgt_owned_e = self._owned_end(elem, relation.id, tgt_obj.id)
-            tgt_id_attr_val = self._id_attr(tgt_owned_e)
-            #self._member_end(elem, tgt_id_attr_val)
-
             corres_tgt_elem = self._lookup(tgt_obj)
             tgt_owned_attr = self._owned_association_attribute(corres_tgt_elem, src_obj, relation)
             self._member_end(elem, tgt_owned_attr.attrib[f"{XMI}id"])

@@ -321,7 +321,11 @@ class Validator:
 
         # Ensure name and ports are defined when used in relations.
         for rel in sofa_root.relations:
-            source_def = sofa_root.get_by_name(rel.source)
+            try:
+                source_def = sofa_root.get_by_name(rel.source)
+            except KeyError:
+                raise ValidationError(f"Relation {rel} references obj {rel.source}, but is not defined")
+            
             if not source_def: 
                 raise ValidationError(f"Relation {rel} references obj {rel.source}, but is not defined")
             if isinstance(source_def, Component):

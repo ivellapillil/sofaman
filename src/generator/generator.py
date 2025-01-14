@@ -20,6 +20,8 @@ class FileContext(Context):
 
     def __init__(self, out_file):
         self.out_file = out_file
+        # Not nice. Hack for the moment to ensure old data is removed.
+        with open(self.out_file, "w"): ...
 
     def write(self, content):
         # Yes, a very naive implementation for the moment

@@ -6,8 +6,6 @@ class PumlContext(FileContext):
 
     def __init__(self, out_file):
         super().__init__(out_file)
-        # Not nice. Hack for the moment to ensure old data is removed.
-        with open(self.out_file, "w"): ...
 
 class PumlVisitor(Visitor):
 
