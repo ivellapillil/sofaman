@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Protocol, List, runtime_checkable
+from typing import Protocol, List, runtime_checkable, Tuple
 from abc import abstractmethod
 import uuid
 
@@ -54,16 +54,18 @@ class Port(SofaBase, Named):
 
 class Cardinality:
 
-    def __init__(self, card_str: str):
-        if card_str:
-            lower,_ , upper = card_str.partition("..")
-        else:
-            lower, upper = 0, 1
-        self.__init__(lower, upper)
+    def __init__(self, card_str: str = "0..1"):
+        self.lowerBound,_ , self.upperBound = card_str.partition("..")
 
-    def __init__(self, lowerBound="0", upperBound="1"):
-        self.lowerBound = lowerBound
-        self.upperBound = upperBound
+    def to_numeric(self) -> Tuple[int, int]:
+        # Need a better name
+        return (self._as_int(self.lowerBound), self._as_int(self.upperBound))
+    
+    def _as_int(self, bound) -> int:
+        if bound.strip() == "*":
+            return -1
+        else:
+            return int(bound)
 
 class Attribute(SofaBase, Named):
 
@@ -195,9 +197,10 @@ class Interfaces(ArchElementList):
         super().__init__(elems)
 
 class EndPoint:
-    def __init__(self, name, port):
+    def __init__(self, name, port, cardinality = Cardinality()):
         self.name = name
         self.port = port
+        self.cardinality = cardinality
 
 class Relation(ArchElement): 
     def __init__(self, type, source, source_port, target, target_port, struct):

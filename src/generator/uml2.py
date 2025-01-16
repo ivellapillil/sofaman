@@ -124,8 +124,7 @@ class XmiVisitor(Visitor):
             elem.set("name", attr.name)
             elem.set("value", attr.value)
             elem.set(XMI + "type", "uml:Property")
-            self._lower_value(elem, attr.lowerBound)
-            self._upper_value(elem, attr.upperBound)
+            self._cardinality(elem, attr.cardinality)
             if attr.type is not None:
                 arch_elem = self.sofa_root.get_by_name(attr.type)
                 if arch_elem is not None: 
@@ -135,18 +134,24 @@ class XmiVisitor(Visitor):
         self._register(attr, elem)
         return elem
 
+    def _cardinality(self, elem, cardinality):
+        lower, upper = cardinality.to_numeric()
+        self._lower_value(elem, lower)
+        self._upper_value(elem, upper)
+
     def _owned_association_attribute(self, parent, obj, relation):
         elem = SubElement(parent, UML + "ownedAttribute", nsmap=NS_MAP)
         self._id_attr(elem)
         elem.set("association", relation.id)
         self._type(elem, obj.id)
+        self._cardinality(elem, relation.source.cardinality)
         # No registration as it is an attribute that is specific to XMI structure
         return elem
 
     def _lower_value(self, parent, value):
         elem = SubElement(parent, UML + "lowerValue", nsmap=NS_MAP)
         elem.set(XMI+"type", "uml:LiteralInteger")
-        elem.set("value", value)
+        elem.set("value", str(value))
         self._id_attr(elem)
         # No registration as it is an attribute that is specific to XMI structure
         return elem
@@ -154,7 +159,7 @@ class XmiVisitor(Visitor):
     def _upper_value(self, parent, value):
         elem = SubElement(parent, UML + "upperValue", nsmap=NS_MAP)
         elem.set(XMI+"type", "uml:LiteralUnlimitedNatural")
-        elem.set("value", value)
+        elem.set("value", str(value))
         self._id_attr(elem)
         # No registration as it is an attribute that is specific to XMI structure
         return elem
@@ -165,12 +170,14 @@ class XmiVisitor(Visitor):
         # No registration as it is an attribute that is specific to XMI structure
         return elem
 
-    def _owned_end(self, parent, rel_refid, obj_refid):
+    def _owned_end(self, parent, relation, obj_refid):
         elem = SubElement(parent, UML + "ownedEnd", nsmap=NS_MAP)
-        elem.set(XMI+"association", rel_refid)
+        elem.set(XMI+"association", relation.id)
 
         type = SubElement(elem, UML + "type", nsmap=NS_MAP)
         type.set(XMI+"idref", obj_refid)
+
+        self._cardinality(elem, relation.target.cardinality)
 
         # No registration as it is an attribute that is specific to XMI structure
         return elem
@@ -236,7 +243,7 @@ class XmiVisitor(Visitor):
             case RelationType.INFORMATION_FLOW:
                 self._info_flow(elem, corres_src_elem, corres_tgt_elem)
             case RelationType.ASSOCIATION:
-                self._connect_relationships(relation, elem, tgt_obj, src_obj, corres_tgt_elem, corres_src_elem)
+                self._connect_relationships(relation, elem, src_obj, tgt_obj, corres_src_elem, corres_tgt_elem)
             case RelationType.AGGREGATION:
                 # Note: Source and targets are switched here.
                 self._connect_relationships(relation, elem, tgt_obj, src_obj, corres_tgt_elem, corres_src_elem)
@@ -254,7 +261,7 @@ class XmiVisitor(Visitor):
             tgt_owned_attr = self._owned_association_attribute(corres_tgt_elem, src_obj, relation)
             self._member_end(elem, tgt_owned_attr.attrib[f"{XMI}id"])
         else:
-            src_owned_e = self._owned_end(elem, relation.id, src_obj.id)
+            src_owned_e = self._owned_end(elem, relation, src_obj.id)
             src_id_attr_val = self._id_attr(src_owned_e)
             self._member_end(elem, src_id_attr_val)
     
