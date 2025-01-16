@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Main.py with Arguments",
+            "name": "Python Debugger: Main.py PUML",
             "type": "debugpy",
             "request": "launch",
             "program": "src/main.py",
@@ -14,6 +14,19 @@
                 "--input_file=test/resources/full_scope.sofa",
                 "--output_file=out.puml",
                 "--type=puml",
+                "build"
+            ]
+        },
+        {
+            "name": "Python Debugger: Main.py XMI",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--input_file=test/resources/focussed.sofa",
+                "--output_file=out.xmi",
+                "--type=xmi",
                 "build"
             ]
         },

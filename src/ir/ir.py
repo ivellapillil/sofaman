@@ -76,6 +76,15 @@ class SofaStructTransformer(Transformer):
 
 class SofaTransformer(SofaStructTransformer):
 
+    # This class is NOT thread-safe, as its
+    # members are mutated
+
+    def __init__(self, visit_tokens = True):
+        super().__init__(visit_tokens)
+        # Consolidate aggregations since Lark 
+        # processes in a streaming manner
+        self.sofa_root = SofaRoot()
+
     def struct_body(self, args):
         return args[0]
 
@@ -89,37 +98,37 @@ class SofaTransformer(SofaStructTransformer):
             return Struct(args[0], [], {})
 
     def capabilities(self, args):
-        return Capabilities(self._as_arch_elements(args, Capability))
+        return self._extend_arch_elem_list(self.sofa_root.capabilities, self._as_arch_elements(args, Capability))
     
     def capability(self, args):
         return args[0]
     
     def domains(self, args):
-        return Domains(self._as_arch_elements(args, Domain))
+        return self._extend_arch_elem_list(self.sofa_root.domains, self._as_arch_elements(args, Domain))
 
     def domain(self, args):
         return args[0]
     
     def interfaces(self, args):
-        return Interfaces(self._as_arch_elements(args, Interface))
+        return self._extend_arch_elem_list(self.sofa_root.interfaces, self._as_arch_elements(args, Interface))
 
     def interface(self, args):
         return args[0]
     
     def classes(self, args):
-        return Classes(self._as_arch_elements(args, Class))
+        return self._extend_arch_elem_list(self.sofa_root.classes, self._as_arch_elements(args, Class))
 
     def clazz(self, args):
         return args[0]
     
     def components(self, args):
-        return Components(self._as_arch_elements(args, Component))
+        return self._extend_arch_elem_list(self.sofa_root.components, self._as_arch_elements(args, Component))
 
     def component(self, args):
         return args[0]
     
     def actors(self, args):
-        return Actors(self._as_arch_elements(args, Actor))
+        return self._extend_arch_elem_list(self.sofa_root.actors, self._as_arch_elements(args, Actor))
 
     def actor(self, args):
         return args[0]
@@ -135,6 +144,10 @@ class SofaTransformer(SofaStructTransformer):
                 elems.append(clazz(arg))
         return elems
 
+    def _extend_arch_elem_list(self, arch_elem, args):
+        arch_elem.extend(args)
+        return arch_elem
+
     def imports(self, args):
         imps = []
         for i in args:
@@ -143,25 +156,25 @@ class SofaTransformer(SofaStructTransformer):
                 imps.append(ImportStyle(imp[1]))
             else:
                 imps.append(Import(imp[0]))
-        return Imports(imps)
+        return self._extend_arch_elem_list(self.sofa_root.imports, imps)
 
     def diagrams(self, args):
         diags = []
         for i in args[0].children[0]:
             diags.append(Diagram(i))
-        return Diagrams(diags)
+        return self._extend_arch_elem_list(self.sofa_root.diagrams, diags)
 
     def stereotypes(self, args):
         sts = []
         for i in args[0].children[0]:
             sts.append(Stereotype(i))
-        return Stereotypes(sts)
+        return self._extend_arch_elem_list(self.sofa_root.stereotypes, sts)
 
     def primitives(self, args):
         prims = []
         for i in args[0].children[0]:
             prims.append(Primitive(Struct(i)))
-        return Primitives(prims)
+        return self._extend_arch_elem_list(self.sofa_root.primitives, prims)
 
     def relation_type(self, args):
         return RelationType(args[0].data.value)
@@ -188,10 +201,11 @@ class SofaTransformer(SofaStructTransformer):
         return Relation(type, source_name, source_port, target_name, target_port, Struct(name=name, properties=props))
 
     def relations(self, args):
-        return Relations(args)
+        return self._extend_arch_elem_list(self.sofa_root.relations, args)
     
     def sofa(self, args):
-        return SofaRoot(args)
+        self.sofa_root.set_children(args)
+        return self.sofa_root
 
 class SofaIR:
 

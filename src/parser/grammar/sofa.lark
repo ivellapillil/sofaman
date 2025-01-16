@@ -64,11 +64,13 @@ inheritance: "--|>"
 information_flow: "..>"
 bidirectional_inflow: "<..>"
 realization: "..|>"
+aggregation: "<>->"
+composition: "*->"
 
 port: _AT (CNAME|NUMBER)
 relation_name: name port?
 
-relation_type: (association | bidirectional_association | bidirectional_inflow | inheritance | information_flow | realization)
+relation_type: (association | bidirectional_association | bidirectional_inflow | inheritance | information_flow | realization | aggregation | composition)
 
 relation: "relation" relation_name relation_type relation_name struct_body? _NL*
 relations: relation+

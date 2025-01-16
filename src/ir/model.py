@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Protocol, runtime_checkable
+from typing import Protocol, List, runtime_checkable
 from abc import abstractmethod
 import uuid
 
@@ -52,15 +52,27 @@ class Port(SofaBase, Named):
     def get_name(self):
         return self.name
 
+class Cardinality:
+
+    def __init__(self, card_str: str):
+        if card_str:
+            lower,_ , upper = card_str.partition("..")
+        else:
+            lower, upper = 0, 1
+        self.__init__(lower, upper)
+
+    def __init__(self, lowerBound="0", upperBound="1"):
+        self.lowerBound = lowerBound
+        self.upperBound = upperBound
+
 class Attribute(SofaBase, Named):
 
-    def __init__(self, name, value = '', type=None, lowerBound="0", upperBound="1"):
+    def __init__(self, name, value = '', type=None, cardinality: Cardinality = Cardinality()):
         super().__init__()
         self.name = name
         self.value = value
         self.type = type
-        self.lowerBound = lowerBound
-        self.upperBound = upperBound
+        self.cardinality = cardinality
 
     def get_name(self):
         return self.name
@@ -75,6 +87,7 @@ class ArchElement(SofaBase, Named):
 
     def literals(self):
         props = self.struct.properties
+        if not "attributes" in props: return None
         return props['literals']
 
     def attributes(self):
@@ -92,11 +105,9 @@ class ArchElement(SofaBase, Named):
                 attr_name = i.key
                 attr_value = i.value.get("value", "")
                 attr_card = i.value.get("cardinality", None)
-                if attr_card is not None:
-                    lower,_ , upper = attr_card.partition("..")
                 attr_type = i.value.get("type", None)
 
-                ret.append(Attribute(attr_name, attr_value, attr_type, lower, upper))
+                ret.append(Attribute(attr_name, attr_value, attr_type, Cardinality(attr_card)))
             else:
                 raise AssertionError("Type of attribute must be str|keyvalue")
         return ret
@@ -124,14 +135,17 @@ class ArchElementList():
     def __iter__(self):
         return self.elems.__iter__()
     
+    def extend(self, elems: List[ArchElement]):
+        self.elems.extend(elems)
+    
 # -----
 
 class Import: 
     def __init__(self, file_name):
         self.file_name = file_name
 
-class Imports(ArchElementList):
-    def __init__(self, elems):
+class Imports(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
 
 class ImportStyle(Import): 
@@ -146,9 +160,10 @@ class Actor(ArchElement):
     def __init__(self, struct):
         super().__init__(struct)
 
-class Actors(ArchElementList):
-    def __init__(self, elems):
+class Actors(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
+
 
 class Component(ArchElement): 
     def __init__(self, struct):
@@ -157,35 +172,52 @@ class Component(ArchElement):
     def ports(self):
         return self.list_values("ports", Port)
 
-class Components(ArchElementList):
-    def __init__(self, elems):
+class Components(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
+
 
 class Class(ArchElement): 
     def __init__(self, struct):
         super().__init__(struct)
 
-class Classes(ArchElementList):
-    def __init__(self, elems):
+class Classes(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
+
 
 class Interface(ArchElement): 
     def __init__(self, struct):
         super().__init__(struct)
 
-class Interfaces(ArchElementList):
-    def __init__(self, elems):
+class Interfaces(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
+
+class EndPoint:
+    def __init__(self, name, port):
+        self.name = name
+        self.port = port
 
 class Relation(ArchElement): 
     def __init__(self, type, source, source_port, target, target_port, struct):
         super().__init__(struct)
         self.type = type
-        self.source = source
-        self.source_port = source_port
-        self.target = target
-        self.target_port=  target_port
+        self.source = EndPoint(source, source_port)
+        self.target = EndPoint(target, target_port)
+
+        self._init_props()
     
+    def _init_props(self):
+        props = self.struct.properties
+        source_item = props.get("source", None)
+        if source_item:
+            self.source.cardinality = Cardinality(source_item.get("cardinality", None))
+        target_item = props.get("target", None)
+        if target_item:
+            self.target.cardinality = Cardinality(target_item.get("cardinality", None))
+
+
     def is_bidirectional(self):
         return (self.type == RelationType.BI_ASSOCIATION 
             or self.type == RelationType.BI_INFO_FLOW)
@@ -198,17 +230,20 @@ class Relation(ArchElement):
         return (self.type == RelationType.INFORMATION_FLOW 
             or self.type == RelationType.BI_INFO_FLOW)
 
-class Relations(ArchElementList):
-    def __init__(self, elems):
+class Relations(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
 
+
 class RelationType(Enum):
-    ASSOCIATION = "association"
     INHERITANCE = "inheritance"
     INFORMATION_FLOW = "information_flow"
     REALIZATION = "realization"
+    ASSOCIATION = "association"
     BI_ASSOCIATION = "bidirectional_association"
     BI_INFO_FLOW = "bidirectional_inflow"
+    AGGREGATION = "aggregation"
+    COMPOSITION = "composition"
 
 class Stereotype(Named): 
 
@@ -219,16 +254,16 @@ class Stereotype(Named):
         return self.name
 
 
-class Stereotypes(ArchElementList):
-    def __init__(self, elems):
+class Stereotypes(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
 
 class Primitive(ArchElement): 
     def __init__(self, struct):
         super().__init__(struct)
 
-class Primitives(ArchElementList):
-    def __init__(self, elems):
+class Primitives(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
 
 class Diagram(Named): 
@@ -242,24 +277,24 @@ class Diagram(Named):
         else:
             return self.diagram.key
 
-class Diagrams(ArchElementList):
-    def __init__(self, elems):
+class Diagrams(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
 
-class Components(ArchElementList):
-    def __init__(self, elems):
+class Components(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
 
 class Capability(ArchElement): 
     def __init__(self, struct):
         super().__init__(struct)
 
-class Capabilities(ArchElementList):
-    def __init__(self, elems):
+class Capabilities(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
 
-class Domains(ArchElementList):
-    def __init__(self, elems):
+class Domains(ArchElementList): 
+    def __init__(self, elems=[]):
         super().__init__(elems)
 
 class Domain(ArchElement):
@@ -322,45 +357,51 @@ class Validator:
         # Ensure name and ports are defined when used in relations.
         for rel in sofa_root.relations:
             try:
-                source_def = sofa_root.get_by_name(rel.source)
+                source_def = sofa_root.get_by_name(rel.source.name)
             except KeyError:
-                raise ValidationError(f"Relation {rel} references obj {rel.source}, but is not defined")
+                raise ValidationError(f"Relation {rel} references obj {rel.source.name}, but is not defined")
             
             if not source_def: 
-                raise ValidationError(f"Relation {rel} references obj {rel.source}, but is not defined")
+                raise ValidationError(f"Relation {rel} references obj {rel.source.name}, but is not defined")
             if isinstance(source_def, Component):
-                source_port = rel.source_port
+                source_port = rel.source.port
                 if source_port and (source_def.ports() is None 
                                     or not filter(lambda p: (p.get_name()), source_def.ports())): 
                     raise ValidationError(f"Relation {rel} references source port {source_port}, but is not defined in {source_def}")
 
-            target_def = sofa_root.get_by_name(rel.target)
+            target_def = sofa_root.get_by_name(rel.target.name)
             if not target_def: 
-                raise ValidationError(f"Relation {rel} references obj {rel.target}, but is not defined")
+                raise ValidationError(f"Relation {rel} references obj {rel.target.name}, but is not defined")
             if isinstance(target_def, Component):
-                target_port = rel.target_port
+                target_port = rel.target.port
                 if target_port and (target_def.ports() is None
                                     or not filter(lambda p: (p.get_name()), target_def.ports())): 
-                    raise ValidationError(f"Relation {rel} references source port {target_port}, but is not defined in {target_def}")
+                    raise ValidationError(f"Relation {rel} references target port {target_port}, but is not defined in {target_def}")
 
 
 # ----
 class SofaRoot:
-    def __init__(self, children):
+    def __init__(self):
+        self.children = None
+
+        # The following are for convenience
+        # All the elements are already in children,
+        # but arranged in the manner how Lark parsed
+        # TODO: Revisit for a better design
+        self.imports = Imports()
+        self.diagrams = Diagrams()
+        self.stereotypes = Stereotypes()
+        self.primitives = Primitives()
+        self.actors = Actors()
+        self.components = Components()
+        self.relations = Relations()
+        self.interfaces = Interfaces()
+        self.classes = Classes()
+        self.domains = Domains()
+        self.capabilities = Capabilities()
+
+    def set_children(self, children):
         self.children = children
-
-        self.imports = self._find(children, Imports)
-        self.diagrams = self._find(children, Diagrams)
-        self.stereotypes = self._find(children, Stereotypes)
-        self.primitives = self._find(children, Primitives)
-        self.actors = self._find(children, Actors)
-        self.components = self._find(children, Components)
-        self.relations = self._find(children, Relations)
-        self.interfaces = self._find(children, Interfaces)
-        self.classes = self._find(children, Classes)
-        self.domains = self._find(children, Domains)
-        self.capabilities = self._find(children, Capabilities)
-
         self._index(children)
 
     def _index(self, children):
@@ -399,14 +440,30 @@ class SofaRoot:
         if self.stereotypes:
             for i in self.stereotypes:
                 visitor.visit_stereotype(context, i)
+
+        if self.domains:
+            for i in self.domains:
+                visitor.visit_domain(context, i)
+
+        if self.capabilities:
+            for i in self.capabilities:
+                visitor.visit_capability(context, i)
+        
+        if self.actors:        
+            for i in self.actors:
+                visitor.visit_actor(context, i)
         
         if self.primitives:
             for i in self.primitives:
                 visitor.visit_primitive(context, i)
 
-        if self.actors:        
-            for i in self.actors:
-                visitor.visit_actor(context, i)
+        if self.interfaces:
+            for i in self.interfaces:
+                visitor.visit_interface(context, i)
+        
+        if self.classes:
+            for i in self.classes:
+                visitor.visit_class(context, i)
         
         if self.components:
             for i in self.components:
@@ -416,21 +473,5 @@ class SofaRoot:
             for i in self.relations:
                 visitor.visit_relation(context, i)
         
-        if self.interfaces:
-            for i in self.interfaces:
-                visitor.visit_interface(context, i)
-        
-        if self.classes:
-            for i in self.classes:
-                visitor.visit_class(context, i)
-        
-        if self.domains:
-            for i in self.domains:
-                visitor.visit_domain(context, i)
-
-        if self.capabilities:
-            for i in self.capabilities:
-                visitor.visit_capability(context, i)
-
         # End of the visiting
         visitor.visit_end(context, self)

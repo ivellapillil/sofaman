@@ -26,6 +26,8 @@ interface Product:
             type: Boolean
 
 relation Person --> Product:
-    source_cardinality: 0..1
-    target_cardinality: 1..1
+    source:
+        cardinality: 0..1
+    target:
+        cardinality: 1..1
 

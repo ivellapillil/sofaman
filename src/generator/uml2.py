@@ -73,13 +73,40 @@ class XmiVisitor(Visitor):
         elem.set(XMI + "id", id_val)
         return id_val
 
-    def _packaged_element(self, parent, obj: ArchElement|str, uml_name):
+    def _packaged_element(self, parent, obj: ArchElement|str, uml_name, is_abstract=False):
         elem = SubElement(parent, UML + "packagedElement", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:"+uml_name)
         self._id_attr(elem, obj.id)
         elem.set("name", obj.struct.name)
+        elem.set("isAbstract", str(is_abstract).lower())
         self._register(obj, elem)
         return elem
+    
+    def _realization(self, relation_elem, source_elem, target_elem):
+        relation_elem.set("client", self._id_attr(source_elem))
+        relation_elem.set("supplier", self._id_attr(target_elem))
+
+    def _inheritance(self, relation, source_elem, target_elem):
+        elem = SubElement(source_elem, UML + "generalization", nsmap=NS_MAP)
+        elem.set(XMI + "type", "uml:Generalization")
+        if relation.struct and relation.struct.name: elem.set("name", relation.struct.name)
+        elem.set("general", self._id_attr(target_elem))
+        self._id_attr(elem) # Generated ID
+
+    def _info_flow(self, relation_elem, source_elem, target_elem):
+        relation_elem.set("informationSource", self._id_attr(source_elem))
+        relation_elem.set("informationTarget", self._id_attr(target_elem))
+
+    def _aggregation(self, relation_elem):
+        relation_own_end_elem = self._get_owned_end_elem(relation_elem)
+        relation_own_end_elem.set("aggregation", "shared")
+    
+    def _composition(self, relation_elem):
+        relation_own_end_elem = self._get_owned_end_elem(relation_elem)
+        relation_own_end_elem.set("aggregation", "composite")
+
+    def _get_owned_end_elem(self, relation_elem):
+        return relation_elem.find(UML + "ownedEnd")
 
     def _owned_literal(self, parent, obj, name):
         elem = SubElement(parent, UML + "ownedLiteral", nsmap=NS_MAP)
@@ -153,7 +180,7 @@ class XmiVisitor(Visitor):
         elem.set(XMI+"idref", owned_end_refid)
         # No registration as it is an attribute that is specific to XMI structure
         return elem
-
+    
     def visit_root(self, context, sofa_root):
         self.sofa_root = sofa_root
         if context.is_sparx_ea():
@@ -168,53 +195,84 @@ class XmiVisitor(Visitor):
     def visit_primitive(self, context, primitive): 
         self._packaged_element(context.contentRoot, primitive, "PrimitiveType")
     
-    def visit_actor(self, context, actor): ...
+    def visit_actor(self, context, actor): 
+        _ = self._packaged_element(context.contentRoot, actor, "Actor")
 
     def visit_component(self, context, component):
-        elem = self._packaged_element(context.contentRoot, component, "Component")
+        _ = self._packaged_element(context.contentRoot, component, "Component")
     
     def _get_rel_type(self, relation):
         if relation.is_association():
             return "Association"
         elif relation.is_information_flow():
-            return "Information"
+            return "InformationFlow"
+        elif relation.type == RelationType.REALIZATION:
+            return "Realization"
+        elif relation.type == RelationType.INHERITANCE:
+            return "Inheritance"
+        elif relation.type == RelationType.AGGREGATION:
+            return "Association"
+        elif relation.type == RelationType.COMPOSITION:
+            return "Association"
         else:
             return "Unknown"
 
     def visit_relation(self, context, relation): 
         elem = self._packaged_element(context.contentRoot, relation, self._get_rel_type(relation))
-        src = relation.source
-        tgt = relation.target
+        src = relation.source.name
+        tgt = relation.target.name
 
         src_obj = self.sofa_root.get_by_name(src)
         tgt_obj = self.sofa_root.get_by_name(tgt)
 
-        if not relation.is_bidirectional():
-            src_owned_e = self._owned_end(elem, relation.id, src_obj.id)
-            src_id_attr_val = self._id_attr(src_owned_e)
-            self._member_end(elem, src_id_attr_val)
-
         corres_src_elem = self._lookup(src_obj)
+        corres_tgt_elem = self._lookup(tgt_obj)
+        
+        match relation.type:
+            case RelationType.REALIZATION:
+                self._realization(elem, corres_src_elem, corres_tgt_elem)
+            case RelationType.INHERITANCE:
+                self._inheritance(relation, corres_src_elem, corres_tgt_elem)
+            case RelationType.INFORMATION_FLOW:
+                self._info_flow(elem, corres_src_elem, corres_tgt_elem)
+            case RelationType.ASSOCIATION:
+                self._connect_relationships(relation, elem, tgt_obj, src_obj, corres_tgt_elem, corres_src_elem)
+            case RelationType.AGGREGATION:
+                # Note: Source and targets are switched here.
+                self._connect_relationships(relation, elem, tgt_obj, src_obj, corres_tgt_elem, corres_src_elem)
+                self._aggregation(elem)
+            case RelationType.COMPOSITION:
+                # Note: Source and targets are switched here.
+                self._connect_relationships(relation, elem, tgt_obj, src_obj, corres_tgt_elem, corres_src_elem)
+                self._composition(elem)
+
+    def _connect_relationships(self, relation, elem, src_obj, tgt_obj, corres_src_elem, corres_tgt_elem):
         src_owned_attr = self._owned_association_attribute(corres_src_elem, tgt_obj, relation)
         self._member_end(elem, src_owned_attr.attrib[f"{XMI}id"])
 
         if relation.is_bidirectional():
-            corres_tgt_elem = self._lookup(tgt_obj)
             tgt_owned_attr = self._owned_association_attribute(corres_tgt_elem, src_obj, relation)
             self._member_end(elem, tgt_owned_attr.attrib[f"{XMI}id"])
+        else:
+            src_owned_e = self._owned_end(elem, relation.id, src_obj.id)
+            src_id_attr_val = self._id_attr(src_owned_e)
+            self._member_end(elem, src_id_attr_val)
     
-    def visit_interface(self, context, interface): ...
+    def visit_interface(self, context, interface): 
+        _ = self._packaged_element(context.contentRoot, interface, "Interface", True)
 
     def visit_class(self, context, clazz):
         elem = self._packaged_element(context.contentRoot, clazz, "Class")
         lits = clazz.literals()
-        for i in lits:
-            if type(i) is not str: raise AssertionError("Literals must be strings")
-            self._owned_literal(elem, clazz, i)
+        if lits:
+            for i in lits:
+                if type(i) is not str: raise AssertionError("Literals must be strings")
+                self._owned_literal(elem, clazz, i)
     
         attrs = clazz.attributes()
-        for i in attrs:
-            self._owned_attribute(elem, i)
+        if attrs:
+            for i in attrs:
+                self._owned_attribute(elem, i)
 
     def visit_domain(self, context, domain): ...
 

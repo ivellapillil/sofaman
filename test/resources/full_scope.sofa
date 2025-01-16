@@ -47,6 +47,9 @@ relation PCM_DC@BR1 --> DWH@2:
     "integration type": sync
 
 interface Integrable
+class Integrator
+
+relation Integrator ..|> Integrable
 
 primitives: [String, Int]
 

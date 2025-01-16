@@ -25,10 +25,5 @@ BR1 --> 2
 
 interface Integrable
 
-class Integrator{
-    String customerName
-    address
-    street
-}
-
+class Integrator
 @enduml
