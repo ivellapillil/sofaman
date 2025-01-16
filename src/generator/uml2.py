@@ -135,6 +135,7 @@ class XmiVisitor(Visitor):
         return elem
 
     def _cardinality(self, elem, cardinality):
+        if not cardinality: return
         lower, upper = cardinality.to_numeric()
         self._lower_value(elem, lower)
         self._upper_value(elem, upper)

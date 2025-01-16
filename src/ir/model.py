@@ -197,7 +197,7 @@ class Interfaces(ArchElementList):
         super().__init__(elems)
 
 class EndPoint:
-    def __init__(self, name, port, cardinality = Cardinality()):
+    def __init__(self, name, port, cardinality = None):
         self.name = name
         self.port = port
         self.cardinality = cardinality
