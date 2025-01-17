@@ -3,7 +3,7 @@ import uuid
 from generator.generator import FileContext, Visitor
 import lxml.etree as etree
 from lxml.etree import Element, SubElement
-from ir.model import Attribute, ArchElement, Module, Struct, RelationType
+from ir.model import Attribute, ArchElement, Module, Operation, Parameter, Struct, RelationType
 from enum import Enum
 
 NS_UML = "http://schema.omg.org/spec/UML/2.1"
@@ -129,9 +129,40 @@ class XmiVisitor(Visitor):
                 arch_elem = self.sofa_root.get_by_name(attr.type)
                 if arch_elem is not None: 
                     self._type(elem, arch_elem.id)
+                else:
+                    raise AssertionError(f"Type {attr.type} not defined. Please define it in your sofa file.")
         else:
             raise AssertionError("Attributes must be str|dict")
         self._register(attr, elem)
+        return elem
+
+    def _owned_operation(self, parent, op: Operation):
+        elem = SubElement(parent, UML + "ownedOperation", nsmap=NS_MAP)
+        self._id_attr(elem, op.id)
+        if isinstance(op, str):
+            elem.set("name", op)
+        elif isinstance(op, Operation):
+            elem.set("name", op.name)
+            elem.set("visibility", op.visibility.value)
+            if op.parameters:
+                for param in op.parameters:
+                    self._owned_parameter(elem, param)
+        else:
+            raise AssertionError("Operations must be of type str|dict")
+        return elem
+
+    def _owned_parameter(self, parent, parameter):
+        elem = SubElement(parent, UML + "ownedParameter", nsmap=NS_MAP)
+        self._id_attr(elem, parameter.id)
+        if isinstance(parameter, str):
+            elem.set("name", parameter)
+        elif isinstance(parameter, Parameter):
+            elem.set("name", parameter.name)
+            elem.set("direction", parameter.direction.value)
+            if parameter.type:
+                elem.set("type", parameter.type)
+        else:
+            raise AssertionError("Parameter must be of type str|dict")
         return elem
 
     def _cardinality(self, elem, cardinality):
@@ -281,9 +312,13 @@ class XmiVisitor(Visitor):
         if attrs:
             for i in attrs:
                 self._owned_attribute(elem, i)
+        
+        ops = clazz.operations()
+        if ops:
+            for i in ops:
+                self._owned_operation(elem, i)
 
     def visit_domain(self, context, domain): ...
-
     
     def visit_capability(self, context, capability): ...
 

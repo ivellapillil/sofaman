@@ -8,13 +8,27 @@ import style "default.css"
 actor Client
 actor RelationshipManager
 
+primitives: [String]
+
 class Person:
     attributes:
         name: 
             cardinality: 1
             type: String
+            visibility: public
     operations:
-        - "getName() -> String"
+        fullName:
+            visibility: public
+            parameters:
+                firstName:
+                    type: String
+                lastName:
+                    type: String
+                fullName:
+                    type: String
+                    direction: return
+        address:
+            parameters: [street, city, country]
 
 interface Product:
     attributes:
@@ -25,9 +39,20 @@ interface Product:
             cardinality: 0..1
             type: Boolean
 
-relation Person --> Product:
+class Account
+class Product
+
+relation Account ..|> Product
+
+class CurrentAccount
+class SavingsAccount
+
+relation CurrentAccount --|> Account
+relation SavingsAccount --|> Account
+
+relation Person <>-> Product:
     source:
         cardinality: 0..1
     target:
-        cardinality: 1..1
+        cardinality: 1..*
 

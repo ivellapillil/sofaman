@@ -64,8 +64,14 @@ class Cardinality:
     def _as_int(self, bound) -> int:
         if bound.strip() == "*":
             return -1
-        else:
+        elif bound:
             return int(bound)
+        return -1
+
+class Visibility(Enum):
+    PRIVATE = "private"
+    PUBLIC = "public"
+    PROTECTED = "protected"
 
 class Attribute(SofaBase, Named):
 
@@ -75,6 +81,34 @@ class Attribute(SofaBase, Named):
         self.value = value
         self.type = type
         self.cardinality = cardinality
+
+    def get_name(self):
+        return self.name
+
+class ParameterDirection(Enum):
+    IN = "in"
+    OUT = "out"
+    INOUT = "inout"
+    RETURN = "return"
+
+class Parameter(SofaBase, Named):
+
+    def __init__(self, name, type = None, direction: ParameterDirection = ParameterDirection.IN):
+        super().__init__()
+        self.name = name
+        self.type = type
+        self.direction = direction
+
+    def get_name(self):
+        return self.name
+
+class Operation(SofaBase, Named):
+
+    def __init__(self, name, visibility: Visibility = Visibility.PRIVATE, parameters: List[Parameter] = None):
+        super().__init__()
+        self.name = name
+        self.visibility = visibility
+        self.parameters = parameters
 
     def get_name(self):
         return self.name
@@ -89,7 +123,7 @@ class ArchElement(SofaBase, Named):
 
     def literals(self):
         props = self.struct.properties
-        if not "attributes" in props: return None
+        if not "literals" in props: return None
         return props['literals']
 
     def attributes(self):
@@ -100,18 +134,38 @@ class ArchElement(SofaBase, Named):
 
         if attrs is None: return None
         ret = []
-        for i in attrs:
-            if isinstance(i, str):
-                ret.append(Attribute(i))
-            elif isinstance(i, KeyValue):
-                attr_name = i.key
-                attr_value = i.value.get("value", "")
-                attr_card = i.value.get("cardinality", None)
-                attr_type = i.value.get("type", None)
+        for attr_name in attrs:
+            attr_props = attrs[attr_name]
+            attr_value = attr_props.get("value", "")
+            attr_card = attr_props.get("cardinality", None)
+            attr_type = attr_props.get("type", None)
 
-                ret.append(Attribute(attr_name, attr_value, attr_type, Cardinality(attr_card)))
-            else:
-                raise AssertionError("Type of attribute must be str|keyvalue")
+            ret.append(Attribute(attr_name, attr_value, attr_type, Cardinality(attr_card)))
+        return ret
+
+    def operations(self):
+        props = self.struct.properties
+
+        if not "operations" in props: return None
+        ops = props['operations']
+
+        if ops is None: return None
+        ret = []
+        for op_name in ops:
+            op_props = ops[op_name]
+            op_parameters = op_props.get("parameters", None)
+            op_visibility = Visibility(op_props.get("visibility", Visibility.PRIVATE.value))
+            op_params_ret = []
+            if op_parameters:
+                if isinstance(op_parameters, list):
+                    op_params_ret.append(Parameter(param_name))
+                else: 
+                    for param_name in op_parameters:
+                        param_dict = op_parameters[param_name]
+                        p_type = param_dict.get("type", None)
+                        p_direction = ParameterDirection(param_dict.get("direction", ParameterDirection.IN.value))
+                        op_params_ret.append(Parameter(param_name, p_type, p_direction))
+            ret.append(Operation(op_name, op_visibility, op_params_ret))
         return ret
 
     def list_values(self, prop_name, value_class):
@@ -427,7 +481,7 @@ class SofaRoot:
         return self.index_id[id]
 
     def get_by_name(self, name):
-        return self.index_name[name]
+        return self.index_name.get(name, None)
     
     def validate(self):
         Validator().validate(self)

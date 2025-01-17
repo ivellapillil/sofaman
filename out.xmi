@@ -1,60 +1,51 @@
 <xmi:XMI xmlns="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1">
   <xmi:Documentation xmi:exporter="Enterprise Architect" xmi:exporterVersion="6.5" xmi:exporterId="1"/>
   <uml:Model xmi:type="uml:Model">
-    <packagedElement xmi:type="uml:Package" xmi:id="77e96e6e-83d3-43ce-896c-b964c8bd0a0b" name="out" isAbstract="false">
-      <packagedElement xmi:type="uml:Interface" xmi:id="84da0a1e-c3b8-4825-b711-2494b536f3f1" name="A" isAbstract="true"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="1e70a021-2056-4bfd-994f-186a9a345f63" name="B" isAbstract="false"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="a1505971-56e1-4807-a4dc-cbcac30ca523" name="C" isAbstract="false">
-        <generalization xmi:type="uml:Generalization" name="C_INHERITANCE_D" general="e1e202c9-28b7-44bd-88a0-359c0de1d174" xmi:id="b440576f-274b-44a0-a433-73bb7a3ed221"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="6137ac4e-7eed-4148-bc36-e80c57ddc347" name="out" isAbstract="false">
+      <packagedElement xmi:type="uml:Actor" xmi:id="1b30ef3f-88ce-44ec-9f28-f4dc8936b2bd" name="Client" isAbstract="false"/>
+      <packagedElement xmi:type="uml:Actor" xmi:id="85af077c-5067-4f7c-bdc5-1751f4a59c56" name="RelationshipManager" isAbstract="false"/>
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="dd02aefa-9cf9-4152-9fef-0028672f25e3" name="String" isAbstract="false"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="c5b61ff8-59c5-492d-a8ea-624681bfaaf4" name="Product" isAbstract="true"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="29972eef-3ea3-4479-b7ce-74bff2c8af49" name="Person" isAbstract="false">
+        <ownedAttribute xmi:id="d55f0ad7-f9f1-45ba-85f8-2ded071e8d10" name="name" value="" xmi:type="uml:Property">
+          <lowerValue xmi:type="uml:LiteralInteger" value="1" xmi:id="f9fc7b4d-dca0-4184-89f2-64ddc8bdc5fc"/>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="-1" xmi:id="66676126-156d-4c29-9a62-bff1a2562b4d"/>
+          <type xmi:idref="dd02aefa-9cf9-4152-9fef-0028672f25e3"/>
+        </ownedAttribute>
+        <ownedOperation xmi:id="db1c3d4b-6b98-4e1b-8f69-03ff9b196e6b" name="fullName" visibility="public">
+          <ownedParameter xmi:id="a70f7388-7123-4e5f-b204-18b1a6c4686c" name="firstName" direction="in" type="String"/>
+          <ownedParameter xmi:id="079fedb7-77ca-4084-85f5-f94c3eacd8ac" name="lastName" direction="in" type="String"/>
+          <ownedParameter xmi:id="82ed88aa-f8b3-4aa5-a87b-70d36d737eff" name="fullName" direction="return" type="String"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="513b1184-6d5e-4ded-9dac-b0f1854bdd15" name="address" visibility="private">
+          <ownedParameter xmi:id="20572ee0-5d17-4efc-8012-fe71277306ab" name="fullName" direction="in"/>
+        </ownedOperation>
       </packagedElement>
-      <packagedElement xmi:type="uml:Class" xmi:id="e1e202c9-28b7-44bd-88a0-359c0de1d174" name="D" isAbstract="false"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="9276eb1e-9f5b-47e9-8852-e8212f5bb814" name="E" isAbstract="false"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="ab28fbbe-eb35-476e-b6ee-d650c7e7947e" name="F" isAbstract="false"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="d45b0d64-b213-460e-9eea-d26a0c7b4865" name="G" isAbstract="false">
-        <ownedAttribute xmi:id="d4b581ab-ff73-406a-ae08-c05780535d39" association="b5623588-096c-4f74-b259-87414625d8b9">
-          <type xmi:idref="b9250b81-9a3b-4dc8-9fda-1c8417650abd"/>
-          <lowerValue xmi:type="uml:LiteralInteger" value="0" xmi:id="b53796a1-a783-4cbd-934f-d347264afd5d"/>
-          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1" xmi:id="56b75a96-3af5-44f5-81a8-26702f5e9479"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="24ff280c-79d7-4d86-b322-51b29ee8cd84" name="Account" isAbstract="false"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="bc206a57-5820-4123-9e9c-bca817ac7d04" name="Product" isAbstract="false">
+        <ownedAttribute xmi:id="a6a9ed5e-4eb6-4d96-9dd3-a557d37f508c" association="3bef74f4-44de-47f7-83b8-1094447c5e2a">
+          <type xmi:idref="29972eef-3ea3-4479-b7ce-74bff2c8af49"/>
+          <lowerValue xmi:type="uml:LiteralInteger" value="0" xmi:id="c20b5a97-deb0-4abb-b046-972e5d4b406f"/>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1" xmi:id="328f067a-a624-4717-8a88-d4eaa86e646b"/>
         </ownedAttribute>
       </packagedElement>
-      <packagedElement xmi:type="uml:Class" xmi:id="b9250b81-9a3b-4dc8-9fda-1c8417650abd" name="H" isAbstract="false"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="ab8f9d0f-e880-4d46-9718-cc9e7d64f728" name="I" isAbstract="false"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="9d15a52d-11ce-4312-b613-7bd687cd954a" name="J" isAbstract="false">
-        <ownedAttribute xmi:id="7fd5d1d4-2ba3-443a-821b-c9ab1810263d" association="144a2bd2-055d-4dad-a165-4ab52e83d2b0">
-          <type xmi:idref="ab8f9d0f-e880-4d46-9718-cc9e7d64f728"/>
-        </ownedAttribute>
+      <packagedElement xmi:type="uml:Class" xmi:id="482bd6e9-ba74-4e3f-a420-7f4147b9eb87" name="CurrentAccount" isAbstract="false">
+        <generalization xmi:type="uml:Generalization" name="CurrentAccount_INHERITANCE_Account" general="6c2ae725-566c-4f78-b679-3212ecad1876" xmi:id="59596804-377e-442e-a798-84bfd81d5afd"/>
       </packagedElement>
-      <packagedElement xmi:type="uml:Class" xmi:id="bbda2c8b-3c67-472d-b7ce-c58d50b2968c" name="K" isAbstract="false"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="b2112500-70c8-4974-8cf2-e4106a1e1842" name="L" isAbstract="false">
-        <ownedAttribute xmi:id="ffcea9f8-adf4-42a2-8bad-5b494d882269" association="09251166-86aa-4dd7-a63c-b73ab1174553">
-          <type xmi:idref="bbda2c8b-3c67-472d-b7ce-c58d50b2968c"/>
-        </ownedAttribute>
+      <packagedElement xmi:type="uml:Class" xmi:id="20625d00-7be4-4a8a-a12d-d8e6d614e26d" name="SavingsAccount" isAbstract="false">
+        <generalization xmi:type="uml:Generalization" name="SavingsAccount_INHERITANCE_Account" general="24ff280c-79d7-4d86-b322-51b29ee8cd84" xmi:id="e2485201-4b66-4691-92c3-b680f9e4028e"/>
       </packagedElement>
-      <packagedElement xmi:type="uml:Realization" xmi:id="2c732855-1b87-45b4-abf7-2312643e3716" name="A_REALIZATION_B" isAbstract="false" client="84da0a1e-c3b8-4825-b711-2494b536f3f1" supplier="1e70a021-2056-4bfd-994f-186a9a345f63"/>
-      <packagedElement xmi:type="uml:Inheritance" xmi:id="5364a561-2313-42a6-aa4e-7414ce0fd8de" name="C_INHERITANCE_D" isAbstract="false"/>
-      <packagedElement xmi:type="uml:InformationFlow" xmi:id="818b1188-8577-46d0-8d34-abf2cdda7f50" name="E_INFORMATION_FLOW_F" isAbstract="false" informationSource="9276eb1e-9f5b-47e9-8852-e8212f5bb814" informationTarget="ab28fbbe-eb35-476e-b6ee-d650c7e7947e"/>
-      <packagedElement xmi:type="uml:Association" xmi:id="b5623588-096c-4f74-b259-87414625d8b9" name="G_ASSOCIATION_H" isAbstract="false">
-        <memberEnd xmi:idref="d4b581ab-ff73-406a-ae08-c05780535d39"/>
-        <ownedEnd xmi:association="b5623588-096c-4f74-b259-87414625d8b9" xmi:id="df9d31e1-7caf-4d11-b4c5-cad999011c4b">
-          <type xmi:idref="d45b0d64-b213-460e-9eea-d26a0c7b4865"/>
-          <lowerValue xmi:type="uml:LiteralInteger" value="1" xmi:id="fba6ba5f-9d7f-481a-a36f-c6f05c12c612"/>
-          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1" xmi:id="4d54456d-8a67-458b-a4b3-0b5d1ebfeaf7"/>
+      <packagedElement xmi:type="uml:Realization" xmi:id="68cbed71-60c9-4b05-ace7-985e08c1d298" name="Account_REALIZATION_Product" isAbstract="false" client="0bf2c742-986b-49db-b016-3258309d4163" supplier="bc206a57-5820-4123-9e9c-bca817ac7d04"/>
+      <packagedElement xmi:type="uml:Inheritance" xmi:id="f23ea647-8019-48d2-92f7-a2aea44ee771" name="CurrentAccount_INHERITANCE_Account" isAbstract="false"/>
+      <packagedElement xmi:type="uml:Inheritance" xmi:id="c19c3ba4-be69-4f32-8cf7-8363c71e8cb6" name="SavingsAccount_INHERITANCE_Account" isAbstract="false"/>
+      <packagedElement xmi:type="uml:Association" xmi:id="3bef74f4-44de-47f7-83b8-1094447c5e2a" name="Person_AGGREGATION_Product" isAbstract="false">
+        <memberEnd xmi:idref="a6a9ed5e-4eb6-4d96-9dd3-a557d37f508c"/>
+        <ownedEnd xmi:association="3bef74f4-44de-47f7-83b8-1094447c5e2a" xmi:id="b8ba8102-c3b8-47b8-940f-982e46fdd0ec" aggregation="shared">
+          <type xmi:idref="1a38475f-e7cb-4495-a56d-62e013c50d90"/>
+          <lowerValue xmi:type="uml:LiteralInteger" value="1" xmi:id="189723a0-337c-4ec4-8398-287aa0b1864c"/>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="-1" xmi:id="5cde7a73-be72-4b84-b82d-7f618065c74e"/>
         </ownedEnd>
-        <memberEnd xmi:idref="df9d31e1-7caf-4d11-b4c5-cad999011c4b"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Association" xmi:id="144a2bd2-055d-4dad-a165-4ab52e83d2b0" name="I_AGGREGATION_J" isAbstract="false">
-        <memberEnd xmi:idref="7fd5d1d4-2ba3-443a-821b-c9ab1810263d"/>
-        <ownedEnd xmi:association="144a2bd2-055d-4dad-a165-4ab52e83d2b0" xmi:id="921ba297-8d93-4cc6-8141-1e796fc5162a" aggregation="shared">
-          <type xmi:idref="9d15a52d-11ce-4312-b613-7bd687cd954a"/>
-        </ownedEnd>
-        <memberEnd xmi:idref="921ba297-8d93-4cc6-8141-1e796fc5162a"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Association" xmi:id="09251166-86aa-4dd7-a63c-b73ab1174553" name="K_COMPOSITION_L" isAbstract="false">
-        <memberEnd xmi:idref="ffcea9f8-adf4-42a2-8bad-5b494d882269"/>
-        <ownedEnd xmi:association="09251166-86aa-4dd7-a63c-b73ab1174553" xmi:id="881ea8d3-a7ca-41f6-8480-fae6e6a0c75f" aggregation="composite">
-          <type xmi:idref="b2112500-70c8-4974-8cf2-e4106a1e1842"/>
-        </ownedEnd>
-        <memberEnd xmi:idref="881ea8d3-a7ca-41f6-8480-fae6e6a0c75f"/>
+        <memberEnd xmi:idref="b8ba8102-c3b8-47b8-940f-982e46fdd0ec"/>
       </packagedElement>
     </packagedElement>
   </uml:Model>
