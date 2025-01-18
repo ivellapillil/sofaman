@@ -2,3 +2,18 @@ class Person
 interface Product
 
 relation Person <>-> Product
+
+class Person2
+interface Product2
+
+relation Person2 *-> Product2
+
+class Source
+class Target
+
+relation Source --> Target
+
+class Source2
+class Target2
+
+relation Source2 <--> Target2

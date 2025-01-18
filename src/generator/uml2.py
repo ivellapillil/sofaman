@@ -275,35 +275,30 @@ class XmiVisitor(Visitor):
                 self._inheritance(relation, src_endpoint, tgt_endpoint)
             case RelationType.INFORMATION_FLOW:
                 self._info_flow(rel_elem, src_endpoint, tgt_endpoint)
-            case RelationType.ASSOCIATION:
-                self._connect_simple_association(relation, rel_elem, src_endpoint, tgt_endpoint)
-            case RelationType.AGGREGATION:
-                self._connect_aggregation_like_association(relation, rel_elem, src_endpoint, tgt_endpoint)
-            case RelationType.COMPOSITION:
-                self._connect_aggregation_like_association(relation, rel_elem, src_endpoint, tgt_endpoint)
+            case _:
+                self._connection_relationship_ends(relation, rel_elem, src_endpoint, tgt_endpoint)
 
-    def _connect_simple_association(self, relation, rel_elem, src_endpoint: RelationEndPoint, tgt_endpoint: RelationEndPoint):
-        # Source endpoint has an ownedAttribute that refers to the target obj
-        src_owned_attr_pointing_to_tgt = self._owned_association_attribute(src_endpoint.endpoint_elem, tgt_endpoint.endpoint_obj, relation)
-        # Relation now needs to point to that attribute on one end
-        self._member_end(rel_elem, src_owned_attr_pointing_to_tgt.attrib[f"{XMI}id"])
-        rel_owned_end_elem = self._owned_end(rel_elem, relation, tgt_endpoint.endpoint_obj.id)
-
-        if relation.is_bidirectional():
-            # Point directly to the target packagedElement
-            self._member_end(rel_elem, tgt_endpoint.endpoint_obj.id)
-
-    def _connect_aggregation_like_association(self, relation, rel_elem, src_endpoint: RelationEndPoint, tgt_endpoint: RelationEndPoint):
+    def _connection_relationship_ends(self, relation, rel_elem, src_endpoint: RelationEndPoint, tgt_endpoint: RelationEndPoint):
         # Target endpoint has an ownedAttribute that refers to the source obj
         src_owned_attr_pointing_to_tgt = self._owned_association_attribute(src_endpoint.endpoint_elem, tgt_endpoint.endpoint_obj, relation)
-        src_owned_attr_pointing_to_tgt.set("aggregation", "shared")
         # Relation now needs to point to that attribute on one end
         self._member_end(rel_elem, src_owned_attr_pointing_to_tgt.attrib[f"{XMI}id"])
+        
+        match relation.type:
+            case RelationType.AGGREGATION:
+                src_owned_attr_pointing_to_tgt.set("aggregation", "shared")
+            case RelationType.COMPOSITION:
+                src_owned_attr_pointing_to_tgt.set("aggregation", "composite")
+            case _:
+                src_owned_attr_pointing_to_tgt.set("aggregation", "none")
 
-        # Additional member points to ownedElem of the relation itself.
-        rel_owned_end_elem = self._owned_end(rel_elem, relation, src_endpoint.endpoint_obj.id)
-        self._member_end(rel_elem, rel_owned_end_elem.attrib[f"{XMI}id"])
-
+        if relation.is_bidirectional():
+            tgt_owned_attr_pointing_to_tgt = self._owned_association_attribute(tgt_endpoint.endpoint_elem, src_endpoint.endpoint_obj, relation)
+            self._member_end(rel_elem, tgt_owned_attr_pointing_to_tgt.attrib[f"{XMI}id"])
+        else:
+            # Additional member points to ownedElem of the relation itself.
+            rel_owned_end_elem = self._owned_end(rel_elem, relation, src_endpoint.endpoint_obj.id)
+            self._member_end(rel_elem, rel_owned_end_elem.attrib[f"{XMI}id"])
 
     def visit_interface(self, context, interface): 
         elem = self._packaged_element(context.contentRoot, interface, "Interface", True)

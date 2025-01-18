@@ -1,19 +1,59 @@
 <xmi:XMI xmlns="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1">
   <xmi:Documentation xmi:exporter="Enterprise Architect" xmi:exporterVersion="6.5" xmi:exporterId="1"/>
   <uml:Model xmi:type="uml:Model">
-    <packagedElement xmi:type="uml:Package" xmi:id="aca54809-8ce6-4a82-91a4-3fdafd5848ff" name="out" isAbstract="false">
-      <packagedElement xmi:type="uml:Interface" xmi:id="fe3aca9d-6a1f-4d7b-b0f2-467c873150da" name="Product" isAbstract="true"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="9a247471-9e09-4d3f-9085-204e2bb0ca8b" name="Person" isAbstract="false">
-        <ownedAttribute xmi:id="e7915824-e2e5-49f0-b90f-81bba6f7e21a" association="c309b3d6-646c-49da-af4b-a99348058302" aggregation="shared">
-          <type xmi:idref="fe3aca9d-6a1f-4d7b-b0f2-467c873150da"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="8ab70317-8cc0-4aa3-bf14-16e91de3ef5e" name="out" isAbstract="false">
+      <packagedElement xmi:type="uml:Interface" xmi:id="413e540a-cb1a-436d-9774-0373e8cce3a0" name="Product" isAbstract="true"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="b48734c5-06c8-453a-aa85-2a50ed7cccde" name="Product2" isAbstract="true"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="5d1c83d7-8c53-4f04-b0e9-76dcbf6979c6" name="Person" isAbstract="false">
+        <ownedAttribute xmi:id="131f0291-50b9-422d-91d1-297ab9ca9cf3" association="e36813fc-42d5-4016-8461-f605dbbca6e1" aggregation="shared">
+          <type xmi:idref="413e540a-cb1a-436d-9774-0373e8cce3a0"/>
         </ownedAttribute>
       </packagedElement>
-      <packagedElement xmi:type="uml:Association" xmi:id="c309b3d6-646c-49da-af4b-a99348058302" name="Person_AGGREGATION_Product" isAbstract="false">
-        <memberEnd xmi:idref="e7915824-e2e5-49f0-b90f-81bba6f7e21a"/>
-        <ownedEnd xmi:id="03f9be16-1aca-4a84-8371-a1443a002ad4" xmi:association="c309b3d6-646c-49da-af4b-a99348058302">
-          <type xmi:idref="9a247471-9e09-4d3f-9085-204e2bb0ca8b"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="73c2a8fa-01a7-4e9a-9bd9-e419987279d6" name="Person2" isAbstract="false">
+        <ownedAttribute xmi:id="4074cce9-d934-455a-bd14-05f295dee66d" association="aedec869-965a-4d08-b807-8402d6ccfe26" aggregation="composite">
+          <type xmi:idref="b48734c5-06c8-453a-aa85-2a50ed7cccde"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="788ae52e-1e6c-4e41-a3b0-c9e024edaf1a" name="Source" isAbstract="false">
+        <ownedAttribute xmi:id="75a47810-ec71-4768-8aea-7d17d0184b60" association="74a9ddf6-9305-4323-a127-405722922e3a" aggregation="none">
+          <type xmi:idref="7f4c30f6-1728-4c1a-b621-1fcc1a725954"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="7f4c30f6-1728-4c1a-b621-1fcc1a725954" name="Target" isAbstract="false"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="1f669a97-46d8-40a4-b08e-44ca831ecd34" name="Source2" isAbstract="false">
+        <ownedAttribute xmi:id="698417dd-4db8-400c-9553-5751b7d1dd2e" association="d8d881d5-7962-4dd9-bb17-fe9de488429a" aggregation="none">
+          <type xmi:idref="a4da9728-0cd9-468a-8772-dec84d3fbe78"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="a4da9728-0cd9-468a-8772-dec84d3fbe78" name="Target2" isAbstract="false">
+        <ownedAttribute xmi:id="1ab34347-cc9f-4d9b-823a-b1684300ff54" association="d8d881d5-7962-4dd9-bb17-fe9de488429a">
+          <type xmi:idref="1f669a97-46d8-40a4-b08e-44ca831ecd34"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Association" xmi:id="e36813fc-42d5-4016-8461-f605dbbca6e1" name="Person_AGGREGATION_Product" isAbstract="false">
+        <memberEnd xmi:idref="131f0291-50b9-422d-91d1-297ab9ca9cf3"/>
+        <ownedEnd xmi:id="dec20253-9e27-49be-a032-22d79e2ab5e1" xmi:association="e36813fc-42d5-4016-8461-f605dbbca6e1">
+          <type xmi:idref="5d1c83d7-8c53-4f04-b0e9-76dcbf6979c6"/>
         </ownedEnd>
-        <memberEnd xmi:idref="03f9be16-1aca-4a84-8371-a1443a002ad4"/>
+        <memberEnd xmi:idref="dec20253-9e27-49be-a032-22d79e2ab5e1"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Association" xmi:id="aedec869-965a-4d08-b807-8402d6ccfe26" name="Person2_COMPOSITION_Product2" isAbstract="false">
+        <memberEnd xmi:idref="4074cce9-d934-455a-bd14-05f295dee66d"/>
+        <ownedEnd xmi:id="2e35331e-fe44-4653-8b5c-095d1b578c2d" xmi:association="aedec869-965a-4d08-b807-8402d6ccfe26">
+          <type xmi:idref="73c2a8fa-01a7-4e9a-9bd9-e419987279d6"/>
+        </ownedEnd>
+        <memberEnd xmi:idref="2e35331e-fe44-4653-8b5c-095d1b578c2d"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Association" xmi:id="74a9ddf6-9305-4323-a127-405722922e3a" name="Source_ASSOCIATION_Target" isAbstract="false">
+        <memberEnd xmi:idref="75a47810-ec71-4768-8aea-7d17d0184b60"/>
+        <ownedEnd xmi:id="5bbe698e-6a8f-4bf2-8d14-24de40f26e2d" xmi:association="74a9ddf6-9305-4323-a127-405722922e3a">
+          <type xmi:idref="788ae52e-1e6c-4e41-a3b0-c9e024edaf1a"/>
+        </ownedEnd>
+        <memberEnd xmi:idref="5bbe698e-6a8f-4bf2-8d14-24de40f26e2d"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Association" xmi:id="d8d881d5-7962-4dd9-bb17-fe9de488429a" name="Source2_BI_ASSOCIATION_Target2" isAbstract="false">
+        <memberEnd xmi:idref="698417dd-4db8-400c-9553-5751b7d1dd2e"/>
+        <memberEnd xmi:idref="1ab34347-cc9f-4d9b-823a-b1684300ff54"/>
       </packagedElement>
     </packagedElement>
   </uml:Model>
