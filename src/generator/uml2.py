@@ -58,6 +58,13 @@ class XmiContext(FileContext):
 
 class XmiVisitor(Visitor):
 
+    class RelationEndPoint:
+        def __init__(self, relation, relation_elem, endpoint_obj, endpoint_elem):
+            self.relation = relation
+            self.relation_elem = relation_elem
+            self.endpoint_obj = endpoint_obj
+            self.endpoint_elem = endpoint_elem
+
     def __init__(self):
         super().__init__()
         self.registry = {}
@@ -82,20 +89,21 @@ class XmiVisitor(Visitor):
         self._register(obj, elem)
         return elem
     
-    def _realization(self, relation_elem, source_elem, target_elem):
-        relation_elem.set("client", self._id_attr(source_elem))
-        relation_elem.set("supplier", self._id_attr(target_elem))
+    def _realization(self, relation_elem, src_ep: RelationEndPoint, tgt_ep: RelationEndPoint):
+        relation_elem.set("client", self._id_attr(src_ep.endpoint_elem))
+        relation_elem.set("supplier", self._id_attr(tgt_ep.endpoint_elem))
 
-    def _inheritance(self, relation, source_elem, target_elem):
-        elem = SubElement(source_elem, UML + "generalization", nsmap=NS_MAP)
+    def _inheritance(self, relation, src_ep: RelationEndPoint, tgt_ep: RelationEndPoint):
+        elem = SubElement(src_ep.endpoint_elem, UML + "generalization", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:Generalization")
         if relation.struct and relation.struct.name: elem.set("name", relation.struct.name)
-        elem.set("general", self._id_attr(target_elem))
+        elem.set("general", self._id_attr(tgt_ep.endpoint_elem))
+        elem.set("isSubstitutable", "true") # TODO: May be need to be exposed in sofa
         self._id_attr(elem) # Generated ID
 
-    def _info_flow(self, relation_elem, source_elem, target_elem):
-        relation_elem.set("informationSource", self._id_attr(source_elem))
-        relation_elem.set("informationTarget", self._id_attr(target_elem))
+    def _info_flow(self, relation_elem, src_ep: RelationEndPoint, tgt_ep: RelationEndPoint):
+        relation_elem.set("informationSource", self._id_attr(src_ep.endpoint_elem))
+        relation_elem.set("informationTarget", self._id_attr(tgt_ep.endpoint_elem))
 
     def _aggregation(self, relation_elem):
         relation_own_end_elem = self._get_owned_end_elem(relation_elem)
@@ -238,7 +246,8 @@ class XmiVisitor(Visitor):
         _ = self._packaged_element(context.contentRoot, actor, "Actor")
 
     def visit_component(self, context, component):
-        _ = self._packaged_element(context.contentRoot, component, "Component")
+        elem = self._packaged_element(context.contentRoot, component, "Component")
+        self._attributes_operations(context, component, elem)
     
     def _get_rel_type(self, relation):
         if relation.is_association():
@@ -257,63 +266,68 @@ class XmiVisitor(Visitor):
             return "Unknown"
 
     def visit_relation(self, context, relation): 
-        elem = self._packaged_element(context.contentRoot, relation, self._get_rel_type(relation))
-        src = relation.source.name
-        tgt = relation.target.name
+        rel_elem = self._packaged_element(context.contentRoot, relation, self._get_rel_type(relation))
 
-        src_obj = self.sofa_root.get_by_name(src)
-        tgt_obj = self.sofa_root.get_by_name(tgt)
+        src_obj = self.sofa_root.get_by_name(relation.source.name)
+        tgt_obj = self.sofa_root.get_by_name(relation.target.name)
 
-        corres_src_elem = self._lookup(src_obj)
-        corres_tgt_elem = self._lookup(tgt_obj)
+        src_endpoint = XmiVisitor.RelationEndPoint(relation, rel_elem, src_obj, self._lookup(src_obj))
+        tgt_endpoint = XmiVisitor.RelationEndPoint(relation, rel_elem, tgt_obj, self._lookup(tgt_obj))
         
         match relation.type:
             case RelationType.REALIZATION:
-                self._realization(elem, corres_src_elem, corres_tgt_elem)
+                self._realization(rel_elem, src_endpoint, tgt_endpoint)
             case RelationType.INHERITANCE:
-                self._inheritance(relation, corres_src_elem, corres_tgt_elem)
+                self._inheritance(relation, src_endpoint, tgt_endpoint)
             case RelationType.INFORMATION_FLOW:
-                self._info_flow(elem, corres_src_elem, corres_tgt_elem)
+                self._info_flow(rel_elem, src_endpoint, tgt_endpoint)
             case RelationType.ASSOCIATION:
-                self._connect_relationships(relation, elem, src_obj, tgt_obj, corres_src_elem, corres_tgt_elem)
+                self._connect_relationships(relation, rel_elem, src_endpoint, tgt_endpoint)
             case RelationType.AGGREGATION:
-                # Note: Source and targets are switched here.
-                self._connect_relationships(relation, elem, tgt_obj, src_obj, corres_tgt_elem, corres_src_elem)
-                self._aggregation(elem)
+                # Switch source and target (EA)
+                self._connect_relationships(relation, rel_elem, src_endpoint, tgt_endpoint, True)
+                self._aggregation(rel_elem)
             case RelationType.COMPOSITION:
-                # Note: Source and targets are switched here.
-                self._connect_relationships(relation, elem, tgt_obj, src_obj, corres_tgt_elem, corres_src_elem)
-                self._composition(elem)
+                # Switch source and target (EA)
+                self._connect_relationships(relation, rel_elem, src_endpoint, tgt_endpoint, True)
+                self._composition(rel_elem)
 
-    def _connect_relationships(self, relation, elem, src_obj, tgt_obj, corres_src_elem, corres_tgt_elem):
-        src_owned_attr = self._owned_association_attribute(corres_src_elem, tgt_obj, relation)
-        self._member_end(elem, src_owned_attr.attrib[f"{XMI}id"])
+    def _connect_relationships(self, relation, rel_elem, src_endpoint: RelationEndPoint, tgt_endpoint: RelationEndPoint, switch = False):
+
+        src_ep = src_endpoint if not switch else tgt_endpoint
+        tgt_ep = tgt_endpoint if not switch else src_endpoint
+
+        src_owned_attr_pointing_to_tgt = self._owned_association_attribute(src_ep.endpoint_elem, tgt_ep.endpoint_obj, relation)
+        self._member_end(rel_elem, src_owned_attr_pointing_to_tgt.attrib[f"{XMI}id"])
 
         if relation.is_bidirectional():
-            tgt_owned_attr = self._owned_association_attribute(corres_tgt_elem, src_obj, relation)
-            self._member_end(elem, tgt_owned_attr.attrib[f"{XMI}id"])
+            tgt_owned_attr_pointing_to_src = self._owned_association_attribute(tgt_endpoint.endpoint_elem, src_endpoint.endpoint_obj, relation)
+            self._member_end(rel_elem, tgt_owned_attr_pointing_to_src.attrib[f"{XMI}id"])
         else:
-            src_owned_e = self._owned_end(elem, relation, src_obj.id)
-            src_id_attr_val = self._id_attr(src_owned_e)
-            self._member_end(elem, src_id_attr_val)
+            rel_owned_end_elem = self._owned_end(rel_elem, relation, src_ep.endpoint_obj.id)
+            self._member_end(rel_elem, self._id_attr(rel_owned_end_elem))
     
     def visit_interface(self, context, interface): 
-        _ = self._packaged_element(context.contentRoot, interface, "Interface", True)
+        elem = self._packaged_element(context.contentRoot, interface, "Interface", True)
+        self._attributes_operations(context, interface, elem)
 
     def visit_class(self, context, clazz):
         elem = self._packaged_element(context.contentRoot, clazz, "Class")
-        lits = clazz.literals()
+        self._attributes_operations(context, clazz, elem)
+
+    def _attributes_operations(self, context, obj, elem):
+        lits = obj.literals()
         if lits:
             for i in lits:
                 if type(i) is not str: raise AssertionError("Literals must be strings")
-                self._owned_literal(elem, clazz, i)
+                self._owned_literal(elem, obj, i)
     
-        attrs = clazz.attributes()
+        attrs = obj.attributes()
         if attrs:
             for i in attrs:
                 self._owned_attribute(elem, i)
         
-        ops = clazz.operations()
+        ops = obj.operations()
         if ops:
             for i in ops:
                 self._owned_operation(elem, i)

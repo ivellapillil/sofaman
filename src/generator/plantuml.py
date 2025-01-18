@@ -49,10 +49,10 @@ class PumlVisitor(Visitor):
         context.write_ln(f"\n{self._determine_source(context, relation)} {self._as_arrow(context, relation)} {self._determine_target(context, relation)}")
     
     def _determine_source(self, context, relation):
-        return relation.source_port.get_name() if relation.source_port else relation.source
+        return relation.source.port.get_name() if relation.source.port else relation.source.name
     
     def _determine_target(self, context, relation):
-        return relation.target_port.get_name() if relation.target_port else relation.target
+        return relation.target.port.get_name() if relation.target.port else relation.target.name
     
     def _as_arrow(self, context, relation):
         match relation.type:

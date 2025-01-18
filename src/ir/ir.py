@@ -35,7 +35,7 @@ class SofaStructTransformer(Transformer):
         return args[0]
 
     def vector_items(self, args):
-        return args
+        return list(map(lambda s: s.strip(), args)) # TODO: This is not nice. Need to fix it at grammar level!!
 
     def vector(self, args):
         return self._as_flat_list(args)

@@ -8,7 +8,7 @@ import style "default.css"
 actor Client
 actor RelationshipManager
 
-primitives: [String]
+primitives: [String, Boolean]
 
 class Person:
     attributes:
@@ -40,7 +40,7 @@ interface Product:
             type: Boolean
 
 class Account
-class Product
+# class Product :: TODO: Need to handle duplicate names with qname approach
 
 relation Account ..|> Product
 
