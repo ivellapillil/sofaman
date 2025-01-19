@@ -80,6 +80,29 @@ class XmiVisitor(Visitor):
         elem.set(XMI + "id", id_val)
         return id_val
 
+    def _common_aspects(self, parent_elem, obj: ArchElement|str):
+        self._owned_comment(parent_elem, obj)
+
+    def _owned_comment(self, parent, obj: ArchElement|str):
+        if isinstance(obj, str):
+            return
+        if not obj.documentation():
+            return
+        
+        elem = SubElement(parent, UML + "ownedComment", nsmap=NS_MAP)
+        elem.set(XMI + "type", "uml:Comment")
+        self._id_attr(elem) # Random ID
+        elem.set("body", obj.documentation())
+        self._annotated_element(elem, obj)
+        # No need to register.
+        return elem
+
+    def _annotated_element(self, parent, obj: ArchElement|str):
+        elem = SubElement(parent, UML + "annotatedElement", nsmap=NS_MAP)
+        elem.set(XMI+"idref", obj.id)
+        # No need to register.
+        return elem
+
     def _packaged_element(self, parent, obj: ArchElement|str, uml_name, is_abstract=False):
         elem = SubElement(parent, UML + "packagedElement", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:"+uml_name)
@@ -87,6 +110,7 @@ class XmiVisitor(Visitor):
         elem.set("name", obj.struct.name)
         elem.set("isAbstract", str(is_abstract).lower())
         self._register(obj, elem)
+        self._common_aspects(elem, obj)
         return elem
     
     def _realization(self, relation_elem, src_ep: RelationEndPoint, tgt_ep: RelationEndPoint):
@@ -113,6 +137,7 @@ class XmiVisitor(Visitor):
         elem.set("name", name)
         self._id_attr(elem, obj.id)
         self._register(obj, elem)
+        self._common_aspects(elem, obj)
         return elem
 
     def _owned_attribute(self, parent, attr):
@@ -134,6 +159,7 @@ class XmiVisitor(Visitor):
         else:
             raise AssertionError("Attributes must be str|dict")
         self._register(attr, elem)
+        self._common_aspects(elem, attr)
         return elem
 
     def _owned_operation(self, parent, op: Operation):
@@ -149,6 +175,7 @@ class XmiVisitor(Visitor):
                     self._owned_parameter(elem, param)
         else:
             raise AssertionError("Operations must be of type str|dict")
+        self._common_aspects(elem, op)
         return elem
 
     def _owned_parameter(self, parent, parameter):
@@ -163,6 +190,7 @@ class XmiVisitor(Visitor):
                 elem.set("type", parameter.type)
         else:
             raise AssertionError("Parameter must be of type str|dict")
+        self._common_aspects(elem, parameter)
         return elem
 
     def _cardinality(self, elem, cardinality):
@@ -277,6 +305,8 @@ class XmiVisitor(Visitor):
                 self._info_flow(rel_elem, src_endpoint, tgt_endpoint)
             case _:
                 self._connection_relationship_ends(relation, rel_elem, src_endpoint, tgt_endpoint)
+
+        self._common_aspects(rel_elem, relation)
 
     def _connection_relationship_ends(self, relation, rel_elem, src_endpoint: RelationEndPoint, tgt_endpoint: RelationEndPoint):
         # Target endpoint has an ownedAttribute that refers to the source obj

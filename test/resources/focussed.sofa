@@ -8,7 +8,10 @@ interface Product2
 
 relation Person2 *-> Product2
 
-class Source
+class Source:
+    documentation: |
+        A source class that passes to target
+
 class Target
 
 relation Source --> Target

@@ -126,6 +126,11 @@ class ArchElement(SofaBase, Named):
         if not "literals" in props: return None
         return props['literals']
 
+    def documentation(self):
+        props = self.struct.properties
+        if not "documentation" in props: return None
+        return props['documentation']
+
     def attributes(self):
         props = self.struct.properties
 

@@ -11,6 +11,8 @@ actor RelationshipManager
 primitives: [String, Boolean]
 
 class Person:
+    documentation: |
+        Represents a person, who could be either a customer or a relationship manager
     attributes:
         name: 
             cardinality: 1
