@@ -8,6 +8,16 @@ class SofaBase:
     def __init__(self):
         self.id = str(uuid.uuid4())
 
+class PropertyContainer:
+
+    def __init__(self, props):
+        self.props = props
+
+    def documentation(self):
+        props = self.props
+        if not "documentation" in props: return None
+        return props['documentation']
+
 @runtime_checkable
 class Named(Protocol):
 
@@ -73,14 +83,15 @@ class Visibility(Enum):
     PUBLIC = "public"
     PROTECTED = "protected"
 
-class Attribute(SofaBase, Named):
+class Attribute(SofaBase, Named, PropertyContainer):
 
-    def __init__(self, name, value = '', type=None, cardinality: Cardinality = Cardinality()):
-        super().__init__()
+    def __init__(self, name, props):
+        SofaBase.__init__(self)
+        PropertyContainer.__init__(self, props)
         self.name = name
-        self.value = value
-        self.type = type
-        self.cardinality = cardinality
+        self.value = props.get("value", "")
+        self.cardinality = Cardinality(props.get("cardinality", None))
+        self.type = props.get("type", None)
 
     def get_name(self):
         return self.name
@@ -91,31 +102,46 @@ class ParameterDirection(Enum):
     INOUT = "inout"
     RETURN = "return"
 
-class Parameter(SofaBase, Named):
+class Parameter(SofaBase, Named, PropertyContainer):
 
-    def __init__(self, name, type = None, direction: ParameterDirection = ParameterDirection.IN):
-        super().__init__()
+    def __init__(self, name, props):
+        SofaBase.__init__(self)
+        PropertyContainer.__init__(self, props)
         self.name = name
-        self.type = type
-        self.direction = direction
+        self.type = props.get("type", None)
+        self.direction = ParameterDirection(props.get("direction", ParameterDirection.IN.value))
 
     def get_name(self):
         return self.name
 
-class Operation(SofaBase, Named):
+class Operation(SofaBase, Named, PropertyContainer):
 
-    def __init__(self, name, visibility: Visibility = Visibility.PRIVATE, parameters: List[Parameter] = None):
-        super().__init__()
+    def __init__(self, name, props):
+        SofaBase.__init__(self)
+        PropertyContainer.__init__(self, props)
         self.name = name
-        self.visibility = visibility
-        self.parameters = parameters
+        self.visibility = Visibility(props.get("visibility", Visibility.PRIVATE.value))
+        self.parameters = self._extract_parameters(props)
+
+    def _extract_parameters(self, props):
+        op_parameters = props.get("parameters", None)
+        op_params_ret = []
+        if op_parameters:
+            if isinstance(op_parameters, list):
+                op_params_ret.extend(map(lambda param_name: Parameter(param_name, {}), op_parameters))
+            else: 
+                for param_name in op_parameters:
+                    param_dict = op_parameters[param_name]
+                    op_params_ret.append(Parameter(param_name, param_dict))
+        return op_params_ret
 
     def get_name(self):
         return self.name
 
-class ArchElement(SofaBase, Named):
+class ArchElement(SofaBase, Named, PropertyContainer):
     def __init__(self, struct):
-        super().__init__()
+        SofaBase.__init__(self)
+        PropertyContainer.__init__(self, struct.properties)
         self.struct = struct
     
     def get_name(self):
@@ -125,11 +151,6 @@ class ArchElement(SofaBase, Named):
         props = self.struct.properties
         if not "literals" in props: return None
         return props['literals']
-
-    def documentation(self):
-        props = self.struct.properties
-        if not "documentation" in props: return None
-        return props['documentation']
 
     def attributes(self):
         props = self.struct.properties
@@ -141,11 +162,7 @@ class ArchElement(SofaBase, Named):
         ret = []
         for attr_name in attrs:
             attr_props = attrs[attr_name]
-            attr_value = attr_props.get("value", "")
-            attr_card = attr_props.get("cardinality", None)
-            attr_type = attr_props.get("type", None)
-
-            ret.append(Attribute(attr_name, attr_value, attr_type, Cardinality(attr_card)))
+            ret.append(Attribute(attr_name, attr_props))
         return ret
 
     def operations(self):
@@ -158,19 +175,7 @@ class ArchElement(SofaBase, Named):
         ret = []
         for op_name in ops:
             op_props = ops[op_name]
-            op_parameters = op_props.get("parameters", None)
-            op_visibility = Visibility(op_props.get("visibility", Visibility.PRIVATE.value))
-            op_params_ret = []
-            if op_parameters:
-                if isinstance(op_parameters, list):
-                    op_params_ret.append(Parameter(param_name))
-                else: 
-                    for param_name in op_parameters:
-                        param_dict = op_parameters[param_name]
-                        p_type = param_dict.get("type", None)
-                        p_direction = ParameterDirection(param_dict.get("direction", ParameterDirection.IN.value))
-                        op_params_ret.append(Parameter(param_name, p_type, p_direction))
-            ret.append(Operation(op_name, op_visibility, op_params_ret))
+            ret.append(Operation(op_name, op_props))
         return ret
 
     def list_values(self, prop_name, value_class):

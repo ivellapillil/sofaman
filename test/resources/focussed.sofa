@@ -1,22 +1,64 @@
-class Person
-interface Product
+#
+# Sample sofa model that exercises all the supported elements.
+#
 
-relation Person <>-> Product
+import "simple_all.sofa"
+import style "default.css"
 
-class Person2
-interface Product2
+# Comes in two style. Just a list (profile will be basic) or under different profiles.
+stereotypes Regulatory: [GDPR, SOX]
 
-relation Person2 *-> Product2
+actor Client
+actor RelationshipManager
 
-class Source:
+primitives: [String, Boolean]
+
+class Person:
+    stereotypes: [Regulatory.GDPR]
     documentation: |
-        A source class that passes to target
+        Represents a person, who could be either a customer or a relationship manager
+    attributes:
+        name: 
+            cardinality: 1
+            type: String
+            visibility: public
+    operations:
+        fullName:
+            visibility: public
+            parameters:
+                firstName:
+                    type: String
+                lastName:
+                    type: String
+                fullName:
+                    type: String
+                    direction: return
+        address:
+            parameters: [street, city, country]
 
-class Target
+interface Product:
+    attributes:
+        name: 
+            cardinality: 1
+            type: String
+        is_active:
+            cardinality: 0..1
+            type: Boolean
 
-relation Source --> Target
+class Account
+# class Product :: TODO: Need to handle duplicate names with qname approach
 
-class Source2
-class Target2
+relation Account ..|> Product
 
-relation Source2 <--> Target2
+class CurrentAccount
+class SavingsAccount
+
+relation CurrentAccount --|> Account
+relation SavingsAccount --|> Account
+
+relation Person <>-> Product:
+    source:
+        cardinality: 0..1
+    target:
+        cardinality: 1..*
+

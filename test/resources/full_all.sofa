@@ -5,12 +5,17 @@
 import "simple_all.sofa"
 import style "default.css"
 
+# Comes in two style. Just a list (profile will be basic) or under different profiles.
+stereotypes: 
+    regulatory: [GDPR, SOX]
+
 actor Client
 actor RelationshipManager
 
 primitives: [String, Boolean]
 
 class Person:
+    stereotypes: [regulatory.GDPR]
     documentation: |
         Represents a person, who could be either a customer or a relationship manager
     attributes:

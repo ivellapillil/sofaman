@@ -254,6 +254,7 @@ class XmiVisitor(Visitor):
         self.sofa_root = sofa_root
         if context.is_sparx_ea():
             # Need an outer package for EA.
+            # TODO: Revisit after implementing modules.
             elem = self._packaged_element(context.contentRoot, Module(Struct(context.name())), "Package")
             context.contentRoot = elem
 
