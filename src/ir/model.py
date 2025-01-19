@@ -12,11 +12,23 @@ class PropertyContainer:
 
     def __init__(self, props):
         self.props = props
+        self._stereotype_refs = None
 
     def documentation(self):
         props = self.props
         if not "documentation" in props: return None
         return props['documentation']
+    
+    def stereotypes(self):
+        if self._stereotype_refs:
+            return self._stereotype_refs
+        
+        props = self.props
+        if not "stereotypes" in props: return None
+        stereos = props['stereotypes']
+        self._stereotype_refs = list(map(lambda st: StereotypeReference(st), stereos))
+
+        return self._stereotype_refs
 
 @runtime_checkable
 class Named(Protocol):
@@ -312,16 +324,31 @@ class RelationType(Enum):
     AGGREGATION = "aggregation"
     COMPOSITION = "composition"
 
-class Stereotype(Named): 
+class StereotypeReference(Named): 
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, qname):
+        profile, _, name = qname.partition(".")
+        if name == "":
+            self.name = profile
+            self.profile = "default"
+        else:
+            self.profile = profile
+            self.name = name
 
     def get_name(self):
         return self.name
 
+class StereoTypeProfile(SofaBase, Named):
 
-class Stereotypes(ArchElementList): 
+    def __init__(self, name, stereotypes: List[str]):
+        super().__init__()
+        self.name = name
+        self.stereotypes = stereotypes
+    
+    def get_name(self):
+        return self.name
+
+class StereotypeProfiles(ArchElementList): 
     def __init__(self, elems=[]):
         super().__init__(elems)
 
@@ -379,7 +406,7 @@ class Visitor(Protocol):
     def visit_diagram(self, context, diagram): raise NotImplementedError()
 
     @abstractmethod
-    def visit_stereotype(self, context, stereotype): raise NotImplementedError()
+    def visit_stereotype_profile(self, context, stereotype_profile): raise NotImplementedError()
 
     @abstractmethod
     def visit_primitive(self, context, primitive): raise NotImplementedError()
@@ -457,7 +484,7 @@ class SofaRoot:
         # TODO: Revisit for a better design
         self.imports = Imports()
         self.diagrams = Diagrams()
-        self.stereotypes = Stereotypes()
+        self.stereotype_profiles = StereotypeProfiles()
         self.primitives = Primitives()
         self.actors = Actors()
         self.components = Components()
@@ -504,9 +531,9 @@ class SofaRoot:
             for i in self.diagrams:
                 visitor.visit_diagram(context, i)
         
-        if self.stereotypes:
-            for i in self.stereotypes:
-                visitor.visit_stereotype(context, i)
+        if self.stereotype_profiles:
+            for i in self.stereotype_profiles:
+                visitor.visit_stereotype_profile(context, i)
 
         if self.domains:
             for i in self.domains:

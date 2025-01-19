@@ -3,7 +3,7 @@ import uuid
 from generator.generator import FileContext, Visitor
 import lxml.etree as etree
 from lxml.etree import Element, SubElement
-from ir.model import Attribute, ArchElement, Module, Operation, Parameter, Struct, RelationType
+from ir.model import Attribute, ArchElement, Module, Operation, Parameter, Struct, RelationType, PropertyContainer
 from enum import Enum
 
 NS_UML = "http://schema.omg.org/spec/UML/2.1"
@@ -27,25 +27,6 @@ class XmiContext(FileContext):
     def __init__(self, out_file, mode=XmiFlavor.NORMAL):
         super().__init__(out_file)
         self.mode = mode
-        self.root = Element(XMI + "XMI", nsmap=NS_MAP)
-
-        if self.is_sparx_ea():
-            # The following elements are necessary in order for EA to recognize the types 
-            # referenced in attributes. 
-            self.doc = SubElement(self.root, XMI + "Documentation", nsmap=NS_MAP)
-            self.doc.set(XMI + "exporter", "Enterprise Architect")
-            self.doc.set(XMI + "exporterVersion", "6.5")
-            self.doc.set(XMI + "exporterId", "1")
-
-            # For some reason Sparx XMI Importer expects "uml:" namespace only on "Model" element.
-            spx_nsmap = NS_MAP.copy()
-            spx_nsmap.pop(None)
-            self.umlModel = SubElement(self.root, UML + "Model", nsmap=spx_nsmap)
-        else:
-            self.umlModel = SubElement(self.root, UML + "Model", nsmap=NS_MAP)
-
-        self.umlModel.set(XMI + "type", "uml:Model")
-        self.contentRoot = self.umlModel
 
     def is_sparx_ea(self):
         return self.mode == XmiFlavor.SPARX_EA
@@ -80,8 +61,9 @@ class XmiVisitor(Visitor):
         elem.set(XMI + "id", id_val)
         return id_val
 
-    def _common_aspects(self, parent_elem, obj: ArchElement|str):
+    def _common_aspects(self, context, parent_elem, obj: ArchElement|str):
         self._owned_comment(parent_elem, obj)
+        self._stereotypes(context, parent_elem, obj)
 
     def _owned_comment(self, parent, obj: ArchElement|str):
         if isinstance(obj, str):
@@ -103,14 +85,25 @@ class XmiVisitor(Visitor):
         # No need to register.
         return elem
 
-    def _packaged_element(self, parent, obj: ArchElement|str, uml_name, is_abstract=False):
+    def _stereotypes(self, context, parent, obj: ArchElement|str):
+        if not isinstance(obj, PropertyContainer) or not obj.stereotypes():
+            return
+        
+        for stereo in obj.stereotypes():
+            elem = SubElement(context.umlModel, "{%s}" % stereo.profile + stereo.name, nsmap=NS_MAP)
+            elem.set("base_" + obj.__class__.__name__, obj.id)
+
+        # No need to register.
+        return elem
+
+    def _packaged_element(self, context, parent, obj: ArchElement|str, uml_name, is_abstract=False):
         elem = SubElement(parent, UML + "packagedElement", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:"+uml_name)
         self._id_attr(elem, obj.id)
         elem.set("name", obj.struct.name)
         elem.set("isAbstract", str(is_abstract).lower())
         self._register(obj, elem)
-        self._common_aspects(elem, obj)
+        self._common_aspects(context, elem, obj)
         return elem
     
     def _realization(self, relation_elem, src_ep: RelationEndPoint, tgt_ep: RelationEndPoint):
@@ -140,7 +133,7 @@ class XmiVisitor(Visitor):
         self._common_aspects(elem, obj)
         return elem
 
-    def _owned_attribute(self, parent, attr):
+    def _owned_attribute(self, context, parent, attr):
         elem = SubElement(parent, UML + "ownedAttribute", nsmap=NS_MAP)
         self._id_attr(elem, attr.id)
         if isinstance(attr, str):
@@ -159,10 +152,10 @@ class XmiVisitor(Visitor):
         else:
             raise AssertionError("Attributes must be str|dict")
         self._register(attr, elem)
-        self._common_aspects(elem, attr)
+        self._common_aspects(context, elem, attr)
         return elem
 
-    def _owned_operation(self, parent, op: Operation):
+    def _owned_operation(self, context, parent, op: Operation):
         elem = SubElement(parent, UML + "ownedOperation", nsmap=NS_MAP)
         self._id_attr(elem, op.id)
         if isinstance(op, str):
@@ -172,13 +165,13 @@ class XmiVisitor(Visitor):
             elem.set("visibility", op.visibility.value)
             if op.parameters:
                 for param in op.parameters:
-                    self._owned_parameter(elem, param)
+                    self._owned_parameter(context, elem, param)
         else:
             raise AssertionError("Operations must be of type str|dict")
-        self._common_aspects(elem, op)
+        self._common_aspects(context, elem, op)
         return elem
 
-    def _owned_parameter(self, parent, parameter):
+    def _owned_parameter(self, context, parent, parameter):
         elem = SubElement(parent, UML + "ownedParameter", nsmap=NS_MAP)
         self._id_attr(elem, parameter.id)
         if isinstance(parameter, str):
@@ -190,7 +183,7 @@ class XmiVisitor(Visitor):
                 elem.set("type", parameter.type)
         else:
             raise AssertionError("Parameter must be of type str|dict")
-        self._common_aspects(elem, parameter)
+        self._common_aspects(context, elem, parameter)
         return elem
 
     def _cardinality(self, elem, cardinality):
@@ -251,25 +244,56 @@ class XmiVisitor(Visitor):
         return elem
     
     def visit_root(self, context, sofa_root):
+
+        NS_MAP = {
+            None: NS_UML, # Sparx EA doesn't like namespace in some elements (may be a defect)
+            "xmi": NS_XMI,
+            "uml": NS_UML
+        }
+
+        # Add a namespace for each profile.
+        for prof in sofa_root.stereotype_profiles:
+            NS_MAP[prof.name.lower()] = prof.name
+
+        context.root = Element(XMI + "XMI", nsmap=NS_MAP)
+
+        if context.is_sparx_ea():
+            # The following elements are necessary in order for EA to recognize the types 
+            # referenced in attributes. 
+            doc = SubElement(context.root, XMI + "Documentation", nsmap=NS_MAP)
+            doc.set(XMI + "exporter", "Enterprise Architect")
+            doc.set(XMI + "exporterVersion", "6.5")
+            doc.set(XMI + "exporterId", "1")
+
+            # For some reason Sparx XMI Importer expects "uml:" namespace only on "Model" element.
+            spx_nsmap = NS_MAP.copy()
+            spx_nsmap.pop(None)
+            context.umlModel = SubElement(context.root, UML + "Model", nsmap=spx_nsmap)
+        else:
+            context.umlModel = SubElement(context.root, UML + "Model", nsmap=NS_MAP)
+
+        context.umlModel.set(XMI + "type", "uml:Model")
+        context.contentRoot = context.umlModel
+
         self.sofa_root = sofa_root
         if context.is_sparx_ea():
             # Need an outer package for EA.
             # TODO: Revisit after implementing modules.
-            elem = self._packaged_element(context.contentRoot, Module(Struct(context.name())), "Package")
+            elem = self._packaged_element(context, context.contentRoot, Module(Struct(context.name())), "Package")
             context.contentRoot = elem
 
     def visit_diagram(self, context, diagram): ...
 
-    def visit_stereotype(self, context, stereotype): ...
+    def visit_stereotype_profile(self, context, stereotype_profile): ... # Not used for UML (see visit_root)
 
     def visit_primitive(self, context, primitive): 
-        self._packaged_element(context.contentRoot, primitive, "PrimitiveType")
+        self._packaged_element(context, context.contentRoot, primitive, "PrimitiveType")
     
     def visit_actor(self, context, actor): 
-        _ = self._packaged_element(context.contentRoot, actor, "Actor")
+        _ = self._packaged_element(context, context.contentRoot, actor, "Actor")
 
     def visit_component(self, context, component):
-        elem = self._packaged_element(context.contentRoot, component, "Component")
+        elem = self._packaged_element(context, context.contentRoot, component, "Component")
         self._attributes_operations(context, component, elem)
     
     def _get_rel_type(self, relation):
@@ -289,7 +313,7 @@ class XmiVisitor(Visitor):
             return "Unknown"
 
     def visit_relation(self, context, relation): 
-        rel_elem = self._packaged_element(context.contentRoot, relation, self._get_rel_type(relation))
+        rel_elem = self._packaged_element(context, context.contentRoot, relation, self._get_rel_type(relation))
 
         src_obj = self.sofa_root.get_by_name(relation.source.name)
         tgt_obj = self.sofa_root.get_by_name(relation.target.name)
@@ -307,7 +331,7 @@ class XmiVisitor(Visitor):
             case _:
                 self._connection_relationship_ends(relation, rel_elem, src_endpoint, tgt_endpoint)
 
-        self._common_aspects(rel_elem, relation)
+        self._common_aspects(context, rel_elem, relation)
 
     def _connection_relationship_ends(self, relation, rel_elem, src_endpoint: RelationEndPoint, tgt_endpoint: RelationEndPoint):
         # Target endpoint has an ownedAttribute that refers to the source obj
@@ -332,11 +356,12 @@ class XmiVisitor(Visitor):
             self._member_end(rel_elem, rel_owned_end_elem.attrib[f"{XMI}id"])
 
     def visit_interface(self, context, interface): 
-        elem = self._packaged_element(context.contentRoot, interface, "Interface", True)
+        elem = self._packaged_element(context, context.contentRoot, interface, "Interface", True)
         self._attributes_operations(context, interface, elem)
 
     def visit_class(self, context, clazz):
-        elem = self._packaged_element(context.contentRoot, clazz, "Class")
+        # Need to move away from contentRoot and use packages.
+        elem = self._packaged_element(context, context.contentRoot, clazz, "Class")
         self._attributes_operations(context, clazz, elem)
 
     def _attributes_operations(self, context, obj, elem):
@@ -349,12 +374,12 @@ class XmiVisitor(Visitor):
         attrs = obj.attributes()
         if attrs:
             for i in attrs:
-                self._owned_attribute(elem, i)
+                self._owned_attribute(context, elem, i)
         
         ops = obj.operations()
         if ops:
             for i in ops:
-                self._owned_operation(elem, i)
+                self._owned_operation(context, elem, i)
 
     def visit_domain(self, context, domain): ...
     

@@ -30,7 +30,7 @@ QUOTED_STRING   : _QUOTE STRING _QUOTE
 # Struct Rules ------
 
 name: CNAME | QUOTED_STRING
-QNAME: CNAME ("." CNAME)*
+QNAME: SIMPLE_STRING ("." SIMPLE_STRING)*
 scalar: STRING
 
 _string_newline: STRING _NL?
@@ -78,7 +78,7 @@ relations: relation+
 
 # ---
 
-stereotype: "stereotypes" name _COLON vector _NL*
+stereotype: "stereotype" name _COLON vector _NL*
 stereotypes: stereotype+
 
 # ---

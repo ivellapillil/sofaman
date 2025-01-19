@@ -4,8 +4,8 @@ from ir.model import (SofaRoot, KeyValue, Struct,
                     Class, Import, ImportStyle, Diagram, Actor, 
                     Relation, RelationType, Port, Capabilities, 
                     Domains, Interfaces, Components, Classes, 
-                    Stereotype, Primitive, 
-                    Imports, Diagrams, Actors, Relations, Stereotypes, Primitives)
+                    StereoTypeProfile, Primitive, 
+                    Imports, Diagrams, Actors, Relations, StereotypeProfiles, Primitives)
 from lark import Tree, Transformer
 
 class SofaStructTransformer(Transformer):
@@ -165,10 +165,12 @@ class SofaTransformer(SofaStructTransformer):
         return self._extend_arch_elem_list(self.sofa_root.diagrams, diags)
 
     def stereotypes(self, args):
-        sts = []
-        for i in args[0].children[0]:
-            sts.append(Stereotype(i))
-        return self._extend_arch_elem_list(self.sofa_root.stereotypes, sts)
+        s_profiles = []
+        for i in args:
+            profile = i.children[0]
+            stereotypes = i.children[1]
+            s_profiles.append(StereoTypeProfile(profile, stereotypes))
+        return self._extend_arch_elem_list(self.sofa_root.stereotype_profiles, s_profiles)
 
     def primitives(self, args):
         prims = []
