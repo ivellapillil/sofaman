@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Profile name="untitled_profile" xmi:id="Qobw_imGAqACZgBO_profile" xmi:version="2.1" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/2.0.0/UML" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1">
+	<packageImport xmi:id="Qobw_imGAqACZgBO_profile_UMLMetaModel">
+		<importedPackage href="pathmap://UML_METAMODELS/UML.metamodel.uml#_0" xmi:type="uml:Model"/>
+	</packageImport>
+	<eAnnotations source="http://www.eclipse.org/uml2/2.0.0/UML" xmi:id="Qobw_imGAqACZgBO_profile_definition">
+		<contents name="untitled_profile" nsPrefix="untitled_profile" nsURI="http:///schemas/untitled_profile/0" xmi:id="Qobw_imGAqACZgBO_content" xmi:type="ecore:EPackage">
+			<eClassifiers name="MyOwnStereotype" xmi:id="gKsI_imGAqACZgWr_classifier" xmi:type="ecore:EClass">
+				<eAnnotations references="gKsI_imGAqACZgWr" source="http://www.eclipse.org/uml2/2.0.0/UML" xmi:id="gKsI_imGAqACZgWr_annotation"/>
+				<eStructuralFeatures lowerBound="1" name="base_Class" ordered="false" xmi:id="gKsI_imGAqACZgWr_structuralFeature" xmi:type="ecore:EReference">
+					<eType href="http://www.eclipse.org/uml2/2.0.0/UML#//Class" xmi:type="ecore:EClass"/>
+				</eStructuralFeatures>
+			</eClassifiers>
+			<eClassifiers name="primitive" xmi:id="tptkASmGAqACZgXD_classifier" xmi:type="ecore:EClass">
+				<eAnnotations references="tptkASmGAqACZgXD" source="http://www.eclipse.org/uml2/2.0.0/UML" xmi:id="tptkASmGAqACZgXD_annotation"/>
+				<eStructuralFeatures lowerBound="1" name="base_Class" ordered="false" xmi:id="tptkASmGAqACZgXD_structuralFeature" xmi:type="ecore:EReference">
+					<eType href="http://www.eclipse.org/uml2/2.0.0/UML#//Class" xmi:type="ecore:EClass"/>
+				</eStructuralFeatures>
+			</eClassifiers>
+			<eClassifiers name="Interface" xmi:id="bptkASmGAqACZgXJ_classifier" xmi:type="ecore:EClass">
+				<eAnnotations references="bptkASmGAqACZgXJ" source="http://www.eclipse.org/uml2/2.0.0/UML" xmi:id="bptkASmGAqACZgXJ_annotation"/>
+				<eStructuralFeatures lowerBound="1" name="base_Interface" ordered="false" xmi:id="bptkASmGAqACZgXJ_structuralFeature" xmi:type="ecore:EReference">
+					<eType href="http://www.eclipse.org/uml2/2.0.0/UML#//Interface" xmi:type="ecore:EClass"/>
+				</eStructuralFeatures>
+			</eClassifiers>
+		</contents>
+	</eAnnotations>
+	<packagedElement name="MyOwnStereotype" xmi:id="gKsI_imGAqACZgWr" xmi:type="uml:Stereotype">
+		<ownedAttribute association="gKsI_imGAqACZgWr_extension" name="base_Class" xmi:id="gKsI_imGAqACZgWr_to">
+			<type href="pathmap://UML_METAMODELS/UML.metamodel.uml#Class" xmi:type="uml:Class"/>
+		</ownedAttribute>
+	</packagedElement>
+	<packagedElement memberEnd="gKsI_imGAqACZgWr_from gKsI_imGAqACZgWr_to" name="Class_MyOwnStereotype" xmi:id="gKsI_imGAqACZgWr_extension" xmi:type="uml:Extension">
+		<ownedEnd aggregation="composite" association="gKsI_imGAqACZgWr_extension" type="gKsI_imGAqACZgWr" xmi:id="gKsI_imGAqACZgWr_from" xmi:type="uml:ExtensionEnd"/>
+	</packagedElement>
+	<packagedElement name="primitive" xmi:id="tptkASmGAqACZgXD" xmi:type="uml:Stereotype">
+		<ownedAttribute association="tptkASmGAqACZgXD_extension" name="base_Class" xmi:id="tptkASmGAqACZgXD_to">
+			<type href="pathmap://UML_METAMODELS/UML.metamodel.uml#Class" xmi:type="uml:Class"/>
+		</ownedAttribute>
+	</packagedElement>
+	<packagedElement memberEnd="tptkASmGAqACZgXD_from tptkASmGAqACZgXD_to" name="Class_primitive" xmi:id="tptkASmGAqACZgXD_extension" xmi:type="uml:Extension">
+		<ownedEnd aggregation="composite" association="tptkASmGAqACZgXD_extension" type="tptkASmGAqACZgXD" xmi:id="tptkASmGAqACZgXD_from" xmi:type="uml:ExtensionEnd"/>
+	</packagedElement>
+	<packagedElement name="Interface" xmi:id="bptkASmGAqACZgXJ" xmi:type="uml:Stereotype">
+		<ownedAttribute association="bptkASmGAqACZgXJ_extension" name="base_Interface" xmi:id="bptkASmGAqACZgXJ_to">
+			<type href="pathmap://UML_METAMODELS/UML.metamodel.uml#Interface" xmi:type="uml:Class"/>
+		</ownedAttribute>
+	</packagedElement>
+	<packagedElement memberEnd="bptkASmGAqACZgXJ_from bptkASmGAqACZgXJ_to" name="Class_Interface" xmi:id="bptkASmGAqACZgXJ_extension" xmi:type="uml:Extension">
+		<ownedEnd aggregation="composite" association="bptkASmGAqACZgXJ_extension" type="bptkASmGAqACZgXJ" xmi:id="bptkASmGAqACZgXJ_from" xmi:type="uml:ExtensionEnd"/>
+	</packagedElement>
+</uml:Profile>

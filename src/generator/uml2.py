@@ -90,8 +90,9 @@ class XmiVisitor(Visitor):
             return
         
         for stereo in obj.stereotypes():
-            elem = SubElement(context.umlModel, "{%s}" % stereo.profile + stereo.name, nsmap=NS_MAP)
+            elem = SubElement(context.root, "{%s}" % stereo.profile + stereo.name, nsmap=NS_MAP)
             elem.set("base_" + obj.__class__.__name__, obj.id)
+            self._id_attr(elem) # Random ID
 
         # No need to register.
         return elem
