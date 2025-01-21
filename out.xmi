@@ -1,9 +1,13 @@
-<xmi:XMI xmlns="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1" xmlns:security="Security">
+<xmi:XMI xmlns="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1">
   <xmi:Documentation xmi:exporter="Enterprise Architect" xmi:exporterVersion="6.5" xmi:exporterId="1"/>
   <uml:Model xmi:type="uml:Model">
-    <packagedElement xmi:type="uml:Package" xmi:id="4ba7cca0-a3be-467e-873c-143eba1abdd8" name="out" isAbstract="false">
-      <packagedElement xmi:type="uml:Class" xmi:id="59c3ce69-88fd-4eef-bf24-acfa647586e1" name="Person" isAbstract="false"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="629d5d9f-cf9a-47a4-9e89-a957fac6c5d9" name="out" isAbstract="false" visibility="private">
+      <packagedElement xmi:type="uml:Package" xmi:id="b018329f-e3f3-4e5e-9d30-9c98cd84b364" name="Retail" isAbstract="false" visibility="private">
+        <packagedElement xmi:type="uml:Package" xmi:id="00d4d120-b2e6-4506-94c4-6e4af89d5e61" name="CRM" isAbstract="false" visibility="public">
+          <packagedElement xmi:type="uml:Class" xmi:id="83f1efde-3db5-4da8-8a2f-9b2d11cfd5ed" name="Person" isAbstract="false" visibility="private"/>
+        </packagedElement>
+        <packagedElement xmi:type="uml:Class" xmi:id="b2298b4a-9d69-4ab3-a0eb-84ee91979e5f" name="Product" isAbstract="false" visibility="private"/>
+      </packagedElement>
     </packagedElement>
   </uml:Model>
-  <security:PIDRelevant base_Class="59c3ce69-88fd-4eef-bf24-acfa647586e1" xmi:id="29a5e82c-f332-4018-b052-007319ff48a5"/>
 </xmi:XMI>

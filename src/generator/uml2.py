@@ -54,7 +54,7 @@ class XmiVisitor(Visitor):
         self.registry[obj] = elem
     
     def _lookup(self, obj):
-        return self.registry[obj]
+        return self.registry.get(obj, None)
 
     def _id_attr(self, elem, id=None):
         id_val = id or str(uuid.uuid4())
@@ -101,8 +101,9 @@ class XmiVisitor(Visitor):
         elem = SubElement(parent, UML + "packagedElement", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:"+uml_name)
         self._id_attr(elem, obj.id)
-        elem.set("name", obj.struct.name)
+        elem.set("name", obj.get_name())
         elem.set("isAbstract", str(is_abstract).lower())
+        elem.set("visibility", obj.visibility.value)
         self._register(obj, elem)
         self._common_aspects(context, elem, obj)
         return elem
@@ -145,7 +146,7 @@ class XmiVisitor(Visitor):
             elem.set(XMI + "type", "uml:Property")
             self._cardinality(elem, attr.cardinality)
             if attr.type is not None:
-                arch_elem = self.sofa_root.get_by_name(attr.type)
+                arch_elem = context.sofa_root.get_by_qname(attr.type)
                 if arch_elem is not None: 
                     self._type(elem, arch_elem.id)
                 else:
@@ -276,25 +277,47 @@ class XmiVisitor(Visitor):
         context.umlModel.set(XMI + "type", "uml:Model")
         context.contentRoot = context.umlModel
 
-        self.sofa_root = sofa_root
+        context.sofa_root = sofa_root
         if context.is_sparx_ea():
             # Need an outer package for EA.
             # TODO: Revisit after implementing modules.
             elem = self._packaged_element(context, context.contentRoot, Module(Struct(context.name())), "Package")
             context.contentRoot = elem
 
+    def _get_parent_elem(self, context, elem):
+        parent_elem = context.contentRoot
+        if elem.parent_package:
+            # Find the corresponding package
+            pkg = context.sofa_root.get_by_id(elem.parent_package.id)
+            if pkg:
+                # Get element corresponding to the package
+                parent_elem = self._lookup(pkg)
+                if parent_elem is None:
+                    # Create the package element.
+                    self.visit_package(context, pkg)
+                    # TODO: May be we return created elements in visitor?
+                    parent_elem = self._lookup(pkg)
+        return parent_elem
+
     def visit_diagram(self, context, diagram): ...
+
+    def visit_package(self, context, package): 
+        # Packages can be visited out of order, and may get created as intermediate 
+        # Therefore, perform a pre-check to avoid duplicates.
+        parent_elem = self._lookup(package)
+        if parent_elem is None:
+            self._packaged_element(context, self._get_parent_elem(context, package), package, "Package")
 
     def visit_stereotype_profile(self, context, stereotype_profile): ... # Not used for UML (see visit_root)
 
     def visit_primitive(self, context, primitive): 
-        self._packaged_element(context, context.contentRoot, primitive, "PrimitiveType")
+        self._packaged_element(context, self._get_parent_elem(context, primitive), primitive, "PrimitiveType")
     
     def visit_actor(self, context, actor): 
-        _ = self._packaged_element(context, context.contentRoot, actor, "Actor")
+        _ = self._packaged_element(context, self._get_parent_elem(context, actor), actor, "Actor")
 
     def visit_component(self, context, component):
-        elem = self._packaged_element(context, context.contentRoot, component, "Component")
+        elem = self._packaged_element(context, self._get_parent_elem(context, component), component, "Component")
         self._attributes_operations(context, component, elem)
     
     def _get_rel_type(self, relation):
@@ -314,10 +337,10 @@ class XmiVisitor(Visitor):
             return "Unknown"
 
     def visit_relation(self, context, relation): 
-        rel_elem = self._packaged_element(context, context.contentRoot, relation, self._get_rel_type(relation))
+        rel_elem = self._packaged_element(context, self._get_parent_elem(context, relation), relation, self._get_rel_type(relation))
 
-        src_obj = self.sofa_root.get_by_name(relation.source.name)
-        tgt_obj = self.sofa_root.get_by_name(relation.target.name)
+        src_obj = context.sofa_root.get_by_qname(relation.source.name)
+        tgt_obj = context.sofa_root.get_by_qname(relation.target.name)
 
         src_endpoint = XmiVisitor.RelationEndPoint(relation, rel_elem, src_obj, self._lookup(src_obj))
         tgt_endpoint = XmiVisitor.RelationEndPoint(relation, rel_elem, tgt_obj, self._lookup(tgt_obj))
@@ -357,12 +380,12 @@ class XmiVisitor(Visitor):
             self._member_end(rel_elem, rel_owned_end_elem.attrib[f"{XMI}id"])
 
     def visit_interface(self, context, interface): 
-        elem = self._packaged_element(context, context.contentRoot, interface, "Interface", True)
+        elem = self._packaged_element(context, self._get_parent_elem(context, interface), interface, "Interface", True)
         self._attributes_operations(context, interface, elem)
 
     def visit_class(self, context, clazz):
         # Need to move away from contentRoot and use packages.
-        elem = self._packaged_element(context, context.contentRoot, clazz, "Class")
+        elem = self._packaged_element(context, self._get_parent_elem(context, clazz), clazz, "Class")
         self._attributes_operations(context, clazz, elem)
 
     def _attributes_operations(self, context, obj, elem):

@@ -2,10 +2,8 @@ from parser.sofa_parser import SofaParser
 from ir.model import (SofaRoot, KeyValue, Struct, 
                     Capability, Domain, Interface, Component, 
                     Class, Import, ImportStyle, Diagram, Actor, 
-                    Relation, RelationType, Port, Capabilities, 
-                    Domains, Interfaces, Components, Classes, 
-                    StereoTypeProfile, Primitive, 
-                    Imports, Diagrams, Actors, Relations, StereotypeProfiles, Primitives)
+                    Relation, RelationType, Port, Package,
+                    StereoTypeProfile, Primitive)
 from lark import Tree, Transformer
 
 class SofaStructTransformer(Transformer):
@@ -107,6 +105,12 @@ class SofaTransformer(SofaStructTransformer):
         return self._extend_arch_elem_list(self.sofa_root.domains, self._as_arch_elements(args, Domain))
 
     def domain(self, args):
+        return args[0]
+    
+    def packages(self, args):
+        return self._extend_arch_elem_list(self.sofa_root.packages, self._as_arch_elements(args, Package))
+
+    def package(self, args):
         return args[0]
     
     def interfaces(self, args):

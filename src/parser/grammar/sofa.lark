@@ -4,7 +4,7 @@
 %ignore WS_INLINE
 
 ?start: sofa
-sofa: (imports | actors | components | classes | interfaces | relations | stereotypes | primitives | diagrams | capabilities | domains)+
+sofa: (imports | actors | components | classes | interfaces | relations | stereotypes | primitives | diagrams | capabilities | domains | packages | _NL)+
 
 # Terminals -----
 
@@ -95,7 +95,7 @@ imports: import+
 # --- Type defs ---
 
 param_list: "(" vector_items* ")"
-struct: name param_list? struct_body? _NL*
+struct: QNAME param_list? struct_body? _NL*
 
 # ---
 
@@ -115,6 +115,11 @@ classes: clazz+
 
 interface: "interface" struct
 interfaces: interface+
+
+# ---
+
+package: "package" struct
+packages: package+
 
 # ---
 

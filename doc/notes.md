@@ -1,0 +1,1 @@
+- the intermediate packages do not have structs. If structs are needed, it must be defined beforehand.

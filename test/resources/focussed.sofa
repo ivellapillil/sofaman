@@ -1,4 +1,10 @@
-stereotype Security: [PIDRelevant]
+
+package Retail.CRM:
+    visibility: public
 
 class Person:
-    stereotypes: [Security.PIDRelevant]
+    package: Retail.CRM
+
+class Product:
+    package: Retail
+

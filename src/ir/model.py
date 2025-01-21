@@ -13,6 +13,7 @@ class PropertyContainer:
     def __init__(self, props):
         self.props = props
         self._stereotype_refs = None
+        self.visibility = Visibility(props.get("visibility", Visibility.PRIVATE.value))
 
     def documentation(self):
         props = self.props
@@ -36,6 +37,9 @@ class Named(Protocol):
     @abstractmethod
     def get_name(self) -> str: ...
 
+    def get_qname(self) -> str:
+        return self.get_name()
+
     def __repr__(self):
         return self.get_name()
 
@@ -50,7 +54,7 @@ class KeyValue(Named):
 
 class Struct:
     def __init__(self, name, inheritance=[], properties={}):
-        self.name = name
+        self.name = name.strip() # TODO: Workaround. Need to strip spaces in the parser itself.
         self.inheritance = inheritance
         self.properties = properties
     
@@ -132,7 +136,6 @@ class Operation(SofaBase, Named, PropertyContainer):
         SofaBase.__init__(self)
         PropertyContainer.__init__(self, props)
         self.name = name
-        self.visibility = Visibility(props.get("visibility", Visibility.PRIVATE.value))
         self.parameters = self._extract_parameters(props)
 
     def _extract_parameters(self, props):
@@ -155,14 +158,29 @@ class ArchElement(SofaBase, Named, PropertyContainer):
         SofaBase.__init__(self)
         PropertyContainer.__init__(self, struct.properties)
         self.struct = struct
+        self.parent_package = None
     
     def get_name(self):
         return self.struct.name
+
+    def get_qname(self):
+        # If there is no parent, return original name
+        names = [self.get_name()]
+        parent_pkg = self.parent_package
+        while parent_pkg:
+            names.append(parent_pkg.get_name())
+            parent_pkg = parent_pkg.parent_package
+        return ".".join(reversed(names))
 
     def literals(self):
         props = self.struct.properties
         if not "literals" in props: return None
         return props['literals']
+    
+    def package(self):
+        props = self.struct.properties
+        if not "package" in props: return None
+        return props['package']
 
     def attributes(self):
         props = self.struct.properties
@@ -216,6 +234,9 @@ class ArchElementList():
     def extend(self, elems: List[ArchElement]):
         self.elems.extend(elems)
     
+    def append(self, elem: ArchElement):
+        self.elems.append(elem)
+    
 # -----
 
 class Import: 
@@ -241,7 +262,6 @@ class Actor(ArchElement):
 class Actors(ArchElementList): 
     def __init__(self, elems=[]):
         super().__init__(elems)
-
 
 class Component(ArchElement): 
     def __init__(self, struct):
@@ -360,6 +380,21 @@ class Primitives(ArchElementList):
     def __init__(self, elems=[]):
         super().__init__(elems)
 
+class Package(ArchElement): 
+    def __init__(self, struct):
+        super().__init__(struct)
+    
+    def get_given_name(self):
+        return self.struct.name
+
+    def get_name(self):
+        given_name = self.get_given_name()
+        return given_name.split(".")[-1]
+
+class Packages(ArchElementList): 
+    def __init__(self, elems=[]):
+        super().__init__(elems)
+
 class Diagram(Named): 
 
     def __init__(self, diagram: str | KeyValue):
@@ -404,6 +439,9 @@ class Visitor(Protocol):
 
     @abstractmethod
     def visit_diagram(self, context, diagram): raise NotImplementedError()
+
+    @abstractmethod
+    def visit_package(self, context, package): raise NotImplementedError()
 
     @abstractmethod
     def visit_stereotype_profile(self, context, stereotype_profile): raise NotImplementedError()
@@ -477,12 +515,15 @@ class Validator:
 class SofaRoot:
     def __init__(self):
         self.children = None
+        self.index_id = {}
+        self.index_name = {}
 
         # The following are for convenience
         # All the elements are already in children,
         # but arranged in the manner how Lark parsed
         # TODO: Revisit for a better design
         self.imports = Imports()
+        self.packages = Packages()
         self.diagrams = Diagrams()
         self.stereotype_profiles = StereotypeProfiles()
         self.primitives = Primitives()
@@ -496,30 +537,80 @@ class SofaRoot:
 
     def set_children(self, children):
         self.children = children
-        self._index(children)
+        self._elaborate()
+        self._index()
+        self._link()
 
-    def _index(self, children):
-        self.index_id = {}
-        self.index_name = {}
-        for child in children:
+    def append_child(self, child, group_type):
+        group = self._find_group(group_type)
+        group.elems.append(child)
+        self._index_child(child)
+
+    def _index_child(self, child):
+        if hasattr(child, 'id'):
+            self.index_id[child.id] = child
+        if isinstance(child, Named):
+            self.index_name[child.get_qname()] = child
+
+    def _elaborate(self):
+        self._create_intermediate_packages()
+
+    def _link(self): 
+        # Now link parent packages to all elems
+        self._link_packages()
+
+    def _link_packages(self):
+        for elem in self.model_elements():
+            pkg_name = elem.package()
+            if pkg_name:
+                parent_pkg = self.get_by_qname(pkg_name)
+                if not parent_pkg:
+                    raise AssertionError(f"Package {pkg_name} referred by {elem.get_name()} not found. Did you use qualified name?")
+                elem.parent_package = parent_pkg
+
+    def _create_intermediate_packages(self):
+        pkg_name_map = {}
+        for pkg in self.packages:
+            pkg_name_map[pkg.get_given_name()] = pkg
+            # Sort it so that even if the package defs are 
+            # out of order, it works
+        sorted_pkgs = dict(sorted(pkg_name_map.items()))
+
+        for pkg_qname_str, pkg in sorted_pkgs.items():
+            pkg_qnames = pkg_qname_str.split(".")
+            parent_pkg = None
+            for index, pkg_name in enumerate(pkg_qnames):
+                corres_pkg = sorted_pkgs.get(".".join(pkg_qnames[0:index+1]), None)
+                if not corres_pkg:
+                    # Missing package. Create and add parent
+                    corres_pkg = Package(Struct(pkg_name))
+                    # Add to the package list
+                    self.packages.append(corres_pkg)
+                corres_pkg.parent_package = parent_pkg
+                parent_pkg = corres_pkg
+
+    # TODO: Need a better name
+    def model_elements(self):
+        for child in self.children:
             for elem in child.elems:
-                if hasattr(elem, 'id'):
-                    self.index_id[elem.id] = elem
-                if isinstance(elem, Named):
-                    self.index_name[elem.get_name()] = elem
+                yield elem
 
-    def _find(self, list, elemType):
-        for i in list:
-            if type(i) == elemType:
+    def _index(self):
+        for elem in self.model_elements():
+            self._index_child(elem)
+
+    def _find_group(self, group_type):
+        for i in self.children:
+            if type(i) == group_type:
                 return i
         return None
     
     def get_by_id(self, id):
         return self.index_id[id]
 
-    def get_by_name(self, name):
-        return self.index_name.get(name, None)
-    
+    def get_by_qname(self, qname):
+        return self.index_name.get(qname, None)
+        
     def validate(self):
         Validator().validate(self)
 
@@ -530,6 +621,10 @@ class SofaRoot:
         if self.diagrams:
             for i in self.diagrams:
                 visitor.visit_diagram(context, i)
+        
+        if self.packages:
+            for i in self.packages:
+                visitor.visit_package(context, i)
         
         if self.stereotype_profiles:
             for i in self.stereotype_profiles:
