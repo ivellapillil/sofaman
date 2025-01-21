@@ -5,17 +5,64 @@
 import "simple_all.sofa"
 import style "default.css"
 
+# --------
+
+diagrams:
+    - Overview
+    - "CRM Ecosystem"
+    - "Technical Architecture":
+        type: component
+
+# --------
+
+stereotype Regulatory: [GDPR]
 stereotype Security: [PIDRelevant]
+
+# --------
 
 actor Client
 actor RelationshipManager
 
+# --------
+
+component RESTService:
+    ports: [443]
+
+component CustomerDB:
+    name: Customer Database
+    description:|
+        Holds customer data
+    stereotypes: [Regulatory.GDPR]
+    ports: [443, SOAP, REST1]
+    diagrams:
+        Overview: 
+            style: dark
+
+component CustomerSearch(RESTService)
+
+relation CustomerSearch@443 ..> CustomerDB@REST1:
+    name: Execute search query
+    description: |
+        Search for customers by name or address
+    stereotypes: [Regulatory.GDPR]
+    protocol: HTTPS
+    diagrams: [Overview, "CRM Ecosystem"]
+    payload: CustomerName, CustomerAddress
+    "Sync/Async": sync
+
+# --------
+
 primitives: [String, Boolean]
+
+# --------
 
 class Person:
     stereotypes: [Security.PIDRelevant]
     documentation: |
         Represents a person, who could be either a customer or a relationship manager
+    literals:
+        - CUSTOMER
+        - LEAD
     attributes:
         name: 
             cardinality: 1
@@ -35,6 +82,8 @@ class Person:
         address:
             parameters: [street, city, country]
 
+# --------
+
 interface Product:
     attributes:
         name: 
@@ -44,15 +93,15 @@ interface Product:
             cardinality: 0..1
             type: Boolean
 
-class Account
-# class Product :: TODO: Need to handle duplicate names with qname approach
+# --------
 
+class Account
 relation Account ..|> Product
 
 class CurrentAccount
-class SavingsAccount
-
 relation CurrentAccount --|> Account
+
+class SavingsAccount
 relation SavingsAccount --|> Account
 
 relation Person <>-> Product:
@@ -61,3 +110,23 @@ relation Person <>-> Product:
     target:
         cardinality: 1..*
 
+class PowerOfAttorney
+Person *--> PowerOfAttorney
+PowerOfAttorney --> Person
+
+class PaymentChannel
+Account <--> PaymentChannel
+
+# -----
+
+domain CRM:
+    name: "Client Relationship Management"
+    capabilities:
+        - CDM
+        - Customer Notes
+        - Case Management
+
+# -----
+
+capability CDM:
+    name: Client Data Management
