@@ -5,3 +5,4 @@
 # magic environments
 .magic
 **/__pycache__
+**/build

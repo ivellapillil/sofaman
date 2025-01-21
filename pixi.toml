@@ -1,12 +1,13 @@
-[project]
+[workspace] 
+channels = [
+  "https://prefix.dev/pixi-build-backends",
+  "https://prefix.dev/conda-forge",
+]
+platforms = ["win-64", "linux-64", "osx-arm64", "osx-64"]
+#preview = ["pixi-build"]
 authors = ["indukumar <v.h.indukumar@gmail.com>"]
-channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "Add a short description here"
 name = "sofarchiman"
-platforms = ["osx-arm64"]
-version = "0.1.0"
-
-[tasks]
 
 [dependencies]
 python = ">=3.13.0,<4"
@@ -15,3 +16,44 @@ session-info = ">=1.0.0,<2"
 jsonpickle = "*"
 lxml = "*"
 fire = ">=0.7.0,<0.8"
+#sofaman = { path = "." }
+
+[tasks] 
+start = "main"
+
+[environments]
+test = ["test"]
+doc = ["doc"]
+
+[feature.test.dependencies]
+pytest = "*"
+
+[feature.test.tasks]
+test = "pytest"
+
+[feature.doc.dependencies]
+sphinx = "*"
+
+[feature.doc.tasks]
+doc = "sphinx-build -M html docs/source docs/build --fail-on-warning"
+
+#[package] 
+#name = "sofaman"
+#version = "0.1.0"
+
+#[package.build] 
+#backend = { name = "pixi-build-python", version = "*" }
+#channels = [
+#  "https://prefix.dev/pixi-build-backends",
+#  "https://prefix.dev/conda-forge",
+#]
+
+#[package.host-dependencies] 
+#hatchling = "==1.26.3"
+
+#[package.run-dependencies] 
+#lark = ">=1.2"
+#session-info = ">=1.0.0,<2"
+#jsonpickle = "*"
+#lxml = "*"
+#fire = ">=0.7.0,<0.8"
