@@ -50,6 +50,10 @@ relation CustomerSearch@443 ..> CustomerDB@REST1:
     payload: CustomerName, CustomerAddress
     "Sync/Async": sync
 
+component ManagementService
+
+CustomerSearch <..> ManagementService
+
 # --------
 
 primitives: [String, Boolean]
