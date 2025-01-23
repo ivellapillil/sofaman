@@ -7,6 +7,11 @@ import style "default.css"
 
 # --------
 
+package Retail.CRM:
+    visibility: public
+
+# --------
+
 diagrams:
     - Overview
     - "CRM Ecosystem"
@@ -33,12 +38,14 @@ component CustomerDB:
     description:|
         Holds customer data
     stereotypes: [Regulatory.GDPR]
+    package: Regulatory.GDPR
     ports: [443, SOAP, REST1]
     diagrams:
         Overview: 
             style: dark
 
-component CustomerSearch(RESTService)
+component CustomerSearch(RESTService):
+    package: Security.PIDRelevant
 
 relation CustomerSearch@443 ..> CustomerDB@REST1:
     name: Execute search query
@@ -52,7 +59,7 @@ relation CustomerSearch@443 ..> CustomerDB@REST1:
 
 component ManagementService
 
-CustomerSearch <..> ManagementService
+relation CustomerSearch <..> ManagementService
 
 # --------
 
@@ -115,11 +122,11 @@ relation Person <>-> Product:
         cardinality: 1..*
 
 class PowerOfAttorney
-Person *--> PowerOfAttorney
-PowerOfAttorney --> Person
+relation Person *-> PowerOfAttorney
+relation PowerOfAttorney --> Person
 
 class PaymentChannel
-Account <--> PaymentChannel
+relation Account <--> PaymentChannel
 
 # -----
 
@@ -127,8 +134,8 @@ domain CRM:
     name: "Client Relationship Management"
     capabilities:
         - CDM
-        - Customer Notes
-        - Case Management
+        - "Customer Notes"
+        - "Case Management"
 
 # -----
 

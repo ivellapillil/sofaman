@@ -18,6 +18,7 @@ lxml = "*"
 fire = ">=0.7.0,<0.8"
 #sofaman = { path = "." }
 
+
 [tasks] 
 start = "main"
 
@@ -30,6 +31,7 @@ pytest = "*"
 
 [feature.test.tasks]
 test = "pytest"
+test-debug = "pytest --trace"
 
 [feature.doc.dependencies]
 sphinx = "*"
