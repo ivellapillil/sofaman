@@ -38,16 +38,16 @@ component CustomerDB:
     description:|
         Holds customer data
     stereotypes: [Regulatory.GDPR]
-    package: Regulatory.GDPR
+    package: Retail.CRM
     ports: [443, SOAP, REST1]
     diagrams:
         Overview: 
             style: dark
 
 component CustomerSearch(RESTService):
-    package: Security.PIDRelevant
+    package: Retail
 
-relation CustomerSearch@443 ..> CustomerDB@REST1:
+relation CustomerSearch@443 flow CustomerDB@REST1:
     name: Execute search query
     description: |
         Search for customers by name or address
@@ -59,7 +59,7 @@ relation CustomerSearch@443 ..> CustomerDB@REST1:
 
 component ManagementService
 
-relation CustomerSearch <..> ManagementService
+relation CustomerSearch bi-flow ManagementService
 
 # --------
 
@@ -107,26 +107,26 @@ interface Product:
 # --------
 
 class Account
-relation Account ..|> Product
+relation Account implements Product
 
 class CurrentAccount
-relation CurrentAccount --|> Account
+relation CurrentAccount inherits Account
 
 class SavingsAccount
-relation SavingsAccount --|> Account
+relation SavingsAccount inherits Account
 
-relation Person <>-> Product:
+relation Person aggregates Product:
     source:
         cardinality: 0..1
     target:
         cardinality: 1..*
 
 class PowerOfAttorney
-relation Person *-> PowerOfAttorney
-relation PowerOfAttorney --> Person
+relation Person composes PowerOfAttorney
+relation PowerOfAttorney associates Person
 
 class PaymentChannel
-relation Account <--> PaymentChannel
+relation Account bi-associates PaymentChannel
 
 # -----
 

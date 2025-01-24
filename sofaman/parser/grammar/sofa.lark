@@ -59,14 +59,14 @@ actor: "actor" name struct_body? _NL*
 actors: actor+
 
 # ---
-association: "-->"
-bidirectional_association: "<-->"
-inheritance: "--|>"
-information_flow: "..>"
-bidirectional_inflow: "<..>"
-realization: "..|>"
-aggregation: "<>->"
-composition: "*->"
+association: "associates"
+bidirectional_association: "bi-associates"
+inheritance: "inherits"
+information_flow: "flow"
+bidirectional_inflow: "bi-flow"
+realization: "implements"
+aggregation: "aggregates"
+composition: "composes"
 
 port: _AT (CNAME|NUMBER)
 relation_name: name port?
