@@ -15,10 +15,10 @@ class PropertyContainer:
         self._stereotype_refs = None
         self.visibility = Visibility(props.get("visibility", Visibility.PRIVATE.value))
 
-    def documentation(self):
+    def description(self):
         props = self.props
-        if not "documentation" in props: return None
-        return props['documentation']
+        if not "description" in props: return None
+        return props['description']
     
     def stereotypes(self):
         if self._stereotype_refs:

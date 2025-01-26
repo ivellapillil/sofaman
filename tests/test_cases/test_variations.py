@@ -52,7 +52,6 @@ def actor_variations():
                     description:|
                         Represents a b actor
                     stereotypes: [Efg.E123]
-                    package: R
                     diagrams:
                         N_diagram: 
                             style: dark

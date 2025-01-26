@@ -8,10 +8,10 @@
             "name": "Python Debugger: Main.py PUML",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/main.py",
+            "program": "sofaman/main.py",
             "console": "integratedTerminal",
             "args": [
-                "--input_file=test/resources/full_scope.sofa",
+                "--input_file=tests/test_cases/full_all.sofa",
                 "--output_file=out.puml",
                 "--type=puml",
                 "build"
@@ -21,10 +21,10 @@
             "name": "Python Debugger: Main.py XMI",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/main.py",
+            "program": "sofaman/main.py",
             "console": "integratedTerminal",
             "args": [
-                "--input_file=test/resources/focussed.sofa",
+                "--input_file=tests/test_cases/full_all.sofa",
                 "--output_file=out.xmi",
                 "--type=xmi",
                 "build"
@@ -34,7 +34,7 @@
             "name": "Python Debugger: main.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/main.py",
+            "program": "sofaman/main.py",
             "console": "integratedTerminal",
             "justMyCode": false
         },

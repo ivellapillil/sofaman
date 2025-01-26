@@ -68,13 +68,13 @@ class XmiVisitor(Visitor):
     def _owned_comment(self, parent, obj: ArchElement|str):
         if isinstance(obj, str):
             return
-        if not obj.documentation():
+        if not obj.description():
             return
         
         elem = SubElement(parent, UML + "ownedComment", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:Comment")
         self._id_attr(elem) # Random ID
-        elem.set("body", obj.documentation())
+        elem.set("body", obj.description())
         self._annotated_element(elem, obj)
         # No need to register.
         return elem

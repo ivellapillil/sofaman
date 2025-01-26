@@ -55,7 +55,7 @@ multiline_vector_body: _NL _INDENT ("-" (map | name) _NL?)+ _DEDENT
 struct_body: _COLON _NL properties
 
 # ---
-actor: "actor" name struct_body? _NL*
+actor: "actor" struct
 actors: actor+
 
 # ---

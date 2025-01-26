@@ -69,7 +69,7 @@ primitives: [String, Boolean]
 
 class Person:
     stereotypes: [Security.PIDRelevant]
-    documentation: |
+    description: |
         Represents a person, who could be either a customer or a relationship manager
     literals:
         - CUSTOMER
@@ -79,9 +79,14 @@ class Person:
             cardinality: 1
             type: String
             visibility: public
+            description: |
+                Name of the person.
+
     operations:
         fullName:
             visibility: public
+            description: |
+                Full name of the person
             parameters:
                 firstName:
                     type: String

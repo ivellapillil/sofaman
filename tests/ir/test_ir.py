@@ -19,6 +19,17 @@ class TestSofaIR:
 
     def test_ir_actor(self, setup):
         tree = setup.sofa_parser.parse(test_variations.actor_variations())
-        sofa_root = setup.sofa_ir.build(tree)
-        assert sofa_root.actors["name"] == "A"
+        sofa_root = setup.sofa_ir._build(tree)
+        for actor in sofa_root.actors:
+            assert actor.get_name() in ["A", "B"]
+            if actor.get_name() == "B":
+                assert actor.description() == "Represents a b actor"
+
+    def test_ir_class(self, setup):
+        tree = setup.sofa_parser.parse(test_variations.class_variations())
+        sofa_root = setup.sofa_ir._build(tree)
+        for clazz in sofa_root.classes:
+            assert clazz.get_name() in ["A", "B", "C"]
+            if clazz.get_name() == "B":
+                assert len(clazz.attributes()) == 1
 
