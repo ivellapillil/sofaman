@@ -6,3 +6,4 @@
 .magic
 **/__pycache__
 **/build
+**/dist

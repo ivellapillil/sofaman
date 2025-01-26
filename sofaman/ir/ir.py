@@ -1,5 +1,5 @@
-from parser.sofa_parser import SofaParser
-from ir.model import (SofaRoot, KeyValue, Struct, 
+from sofaman.parser.sofa_parser import SofaParser
+from sofaman.ir.model import (SofaRoot, KeyValue, Struct, 
                     Capability, Domain, Interface, Component, 
                     Class, Import, ImportStyle, Diagram, Actor, 
                     Relation, RelationType, Port, Package,
