@@ -2,6 +2,7 @@ import pytest
 
 import sofaman.parser.sofa_parser as parser
 from sofaman.ir.ir import SofaIR, SofaRoot, SofaTransformer
+from sofaman.ir.model import Visibility
 import tests.test_cases.test_variations as test_variations
 
 class _Setup:
@@ -31,5 +32,11 @@ class TestSofaIR:
         for clazz in sofa_root.classes:
             assert clazz.get_name() in ["A", "B", "C"]
             if clazz.get_name() == "B":
-                assert len(clazz.attributes()) == 1
-
+                lits = clazz.literals()
+                assert lits == ["C", "D"]
+                attrs = clazz.attributes()
+                assert len(attrs) == 1
+                assert attrs[0].cardinality.to_numeric()[0]== 1 and attrs[0].cardinality.to_numeric()[1] == -1
+                assert attrs[0].visibility == Visibility.PUBLIC
+                ops = clazz.operations()
+                assert ops[0].parameters[1].name == "two"
