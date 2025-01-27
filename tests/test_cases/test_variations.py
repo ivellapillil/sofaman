@@ -10,9 +10,9 @@ def package_variations():
 def diagram_variations():
     return dedent("""
                 diagrams:
-                    - Overview
-                    - "CRM Ecosystem"
-                    - "Technical Architecture":
+                    - X
+                    - "X and Y"
+                    - "Y & Z":
                         type: component
                 diagrams: [A, B, C]
     """)

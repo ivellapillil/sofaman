@@ -230,6 +230,9 @@ class ArchElementList():
 
     def __iter__(self):
         return self.elems.__iter__()
+
+    def __getitem__(self, key):
+        return self.elems[key]
     
     def extend(self, elems: List[ArchElement]):
         self.elems.extend(elems)
@@ -395,6 +398,10 @@ class Packages(ArchElementList):
     def __init__(self, elems=[]):
         super().__init__(elems)
 
+class DiagramType(Enum):
+    # Currently only one is supported
+    COMPONENT = "component"
+
 class Diagram(Named): 
 
     def __init__(self, diagram: str | KeyValue):
@@ -405,6 +412,12 @@ class Diagram(Named):
             return self.diagram
         else:
             return self.diagram.key
+    
+    def get_type(self):
+        if isinstance(self.diagram, str):
+            return DiagramType.COMPONENT # Default
+        else:
+            return DiagramType(self.diagram.value.get("type", DiagramType.COMPONENT))
 
 class Diagrams(ArchElementList): 
     def __init__(self, elems=[]):
@@ -561,6 +574,7 @@ class SofaRoot:
 
     def _link_packages(self):
         for elem in self.model_elements():
+            if not isinstance(elem, ArchElement): continue
             pkg_name = elem.package()
             if pkg_name:
                 parent_pkg = self.get_by_qname(pkg_name)
