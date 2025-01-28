@@ -1,9 +1,9 @@
 
 import uuid
-from generator.generator import FileContext, Visitor
+from sofaman.generator.generator import FileContext, Visitor
 import lxml.etree as etree
 from lxml.etree import Element, SubElement
-from ir.model import Attribute, ArchElement, Module, Operation, Parameter, Struct, RelationType, PropertyContainer
+from sofaman.ir.model import Attribute, ArchElement, Module, Operation, Parameter, Struct, RelationType, PropertyContainer
 from enum import Enum
 
 NS_UML = "http://schema.omg.org/spec/UML/2.1"
@@ -27,6 +27,7 @@ class XmiContext(FileContext):
     def __init__(self, out_file, mode=XmiFlavor.NORMAL):
         super().__init__(out_file)
         self.mode = mode
+        self.root = None
 
     def is_sparx_ea(self):
         return self.mode == XmiFlavor.SPARX_EA

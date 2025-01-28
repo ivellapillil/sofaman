@@ -1,4 +1,4 @@
-from ir.model import SofaRoot, Visitor
+from sofaman.ir.model import SofaRoot, Visitor
 from typing import Protocol
 import pathlib
 
