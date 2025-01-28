@@ -247,7 +247,7 @@ class Import:
         self.file_name = file_name
 
 class Imports(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class ImportStyle(Import): 
@@ -263,7 +263,7 @@ class Actor(ArchElement):
         super().__init__(struct)
 
 class Actors(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class Component(ArchElement): 
@@ -274,16 +274,15 @@ class Component(ArchElement):
         return self.list_values("ports", Port)
 
 class Components(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
-
 
 class Class(ArchElement): 
     def __init__(self, struct):
         super().__init__(struct)
 
 class Classes(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 
@@ -292,7 +291,7 @@ class Interface(ArchElement):
         super().__init__(struct)
 
 class Interfaces(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class EndPoint:
@@ -333,7 +332,7 @@ class Relation(ArchElement):
             or self.type == RelationType.BI_INFO_FLOW)
 
 class Relations(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 
@@ -372,7 +371,7 @@ class StereoTypeProfile(SofaBase, Named):
         return self.name
 
 class StereotypeProfiles(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class Primitive(ArchElement): 
@@ -380,7 +379,7 @@ class Primitive(ArchElement):
         super().__init__(struct)
 
 class Primitives(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class Package(ArchElement): 
@@ -395,7 +394,7 @@ class Package(ArchElement):
         return given_name.split(".")[-1]
 
 class Packages(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class DiagramType(Enum):
@@ -420,11 +419,11 @@ class Diagram(Named):
             return DiagramType(self.diagram.value.get("type", DiagramType.COMPONENT))
 
 class Diagrams(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class Components(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class Capability(ArchElement): 
@@ -432,11 +431,11 @@ class Capability(ArchElement):
         super().__init__(struct)
 
 class Capabilities(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class Domains(ArchElementList): 
-    def __init__(self, elems=[]):
+    def __init__(self, elems):
         super().__init__(elems)
 
 class Domain(ArchElement):
@@ -535,18 +534,18 @@ class SofaRoot:
         # All the elements are already in children,
         # but arranged in the manner how Lark parsed
         # TODO: Revisit for a better design
-        self.imports = Imports()
-        self.packages = Packages()
-        self.diagrams = Diagrams()
-        self.stereotype_profiles = StereotypeProfiles()
-        self.primitives = Primitives()
-        self.actors = Actors()
-        self.components = Components()
-        self.relations = Relations()
-        self.interfaces = Interfaces()
-        self.classes = Classes()
-        self.domains = Domains()
-        self.capabilities = Capabilities()
+        self.imports = Imports([])
+        self.packages = Packages([])
+        self.diagrams = Diagrams([])
+        self.stereotype_profiles = StereotypeProfiles([])
+        self.primitives = Primitives([])
+        self.actors = Actors([])
+        self.components = Components([])
+        self.relations = Relations([])
+        self.interfaces = Interfaces([])
+        self.classes = Classes([])
+        self.domains = Domains([])
+        self.capabilities = Capabilities([])
 
     def set_children(self, children):
         self.children = children
