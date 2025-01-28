@@ -13,6 +13,7 @@ class PropertyContainer:
     def __init__(self, props):
         self.props = props
         self._stereotype_refs = None
+        self._diags = None
         self.visibility = Visibility(props.get("visibility", Visibility.PRIVATE.value))
 
     def description(self):
@@ -30,6 +31,17 @@ class PropertyContainer:
         self._stereotype_refs = list(map(lambda st: StereotypeReference(st), stereos))
 
         return self._stereotype_refs
+
+    def diagrams(self):
+        if self._diags:
+            return self._diags
+        
+        props = self.props
+        if not "diagrams" in props: return None
+        diags = props['diagrams']
+        self._diags = list(map(lambda st: Diagram(st), diags))
+
+        return self._diags
 
 @runtime_checkable
 class Named(Protocol):
@@ -439,8 +451,12 @@ class Domains(ArchElementList):
         super().__init__(elems)
 
 class Domain(ArchElement):
+
     def __init__(self, struct):
         super().__init__(struct)
+
+    def capabilities(self):
+        return self.list_values("capabilities", str) # TODO: May be CapabilityReference instead of str.
 
 # ----
 

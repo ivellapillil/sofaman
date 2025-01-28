@@ -5,6 +5,12 @@ def package_variations():
                 package A.B:
                     visibility: public
                 package C
+                class X:
+                    package: A.B
+                class Y:
+                    package: C
+                class Z:
+                    package: A
     """)
 
 def diagram_variations():
@@ -15,6 +21,10 @@ def diagram_variations():
                     - "Y & Z":
                         type: component
                 diagrams: [A, B, C]
+                component A:
+                    diagrams:
+                        N_diagram: 
+                            style: dark
     """)
 
 def stereotype_variations():
@@ -38,20 +48,6 @@ def actor_variations():
                     description:|
                         Represents a b actor
                     stereotypes: [Efg.E123]
-                    package: R
-                    diagrams:
-                        N_diagram: 
-                            style: dark
-    """)
-
-def actor_variations():
-    return dedent("""
-                actor A
-                actor B:
-                    name: B actor
-                    description:|
-                        Represents a b actor
-                    stereotypes: [Efg.E123]
                     diagrams:
                         N_diagram: 
                             style: dark
@@ -64,11 +60,7 @@ def component_variations():
                     name: A B component
                     description:|
                         Represents a B component
-                    stereotypes: [Abc.123]
-                    package: R
-                    diagrams:
-                        N_diagram: 
-                            style: dark
+                    ports: [8080, R80]
     """)
 
 def relation_variations():
@@ -76,6 +68,14 @@ def relation_variations():
                 relation A composes B
                 relation A associates B
                 relation A aggregates B
+                relation A inherits B
+                relation A implements B
+                relation A bi-flow B
+                relation A bi-associates B:
+                    source:
+                        cardinality: 0..1
+                    target:
+                        cardinality: 1..
                 relation A@12 flow B@R01:
                     name: Flow to B
                     protocol: HTTPS
@@ -123,6 +123,8 @@ def interface_variations():
                     attributes:
                         a: 
                             cardinality: 1
+                        b: 
+                            cardinality: *..1
                 interface B
     """)
     
