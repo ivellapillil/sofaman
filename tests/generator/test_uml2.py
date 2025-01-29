@@ -13,6 +13,7 @@ class _Setup:
     def __init__(self, sofa_parser, sofa_ir):
         self.sofa_parser = sofa_parser
         self.sofa_ir = sofa_ir
+        self.sofa_root = None
 
 class _XMLContext:
     # TODO: May be the design of XMLContext need to be rethought
@@ -39,74 +40,83 @@ class TestUml2:
     def _generate(self, setup : _Setup, sofa_lang_fn):
         tree = setup.sofa_parser.parse(sofa_lang_fn())
         sofa_root = setup.sofa_ir._build(tree)
+        setup.sofa_root = sofa_root
         context = _XMLContext()
         visitor = XmiVisitor()
         Generator().generate(sofa_root, context, visitor)
-        return context.root
+        return self._get_root(context.root)
 
-    def _get_root(slf, element):
+    def _get_root(self, element):
         return element.getroottree().getroot()
 
-    def test_uml_package(self, setup):
-        dom = self._generate(setup, test_variations.package_variations)
-        root = self._get_root(dom)
+    def _print_element(self, element):
+        print(str(etree.tostring(element, pretty_print=True), encoding="UTF8"), flush=True)
+
+    def _get_packaged_element_by_name(self, root, name):
+        elem = root.getroottree().find(f".//{UML}packagedElement[@name='{name}']", namespaces=NS_MAP)
+        return elem
+
+    def test_uml_root(self, setup):
+        root = self._generate(setup, test_variations.package_variations)
         assert root.tag == XMI + "XMI"
-        elems = root.getroottree().findall(f".//{UML}packagedElement[@xmi:type='uml:Package']", namespaces=NS_MAP)
-        assert len(elems) == 4
-        assert elems[1].get("name") == "A"
-        assert elems[1].get("visibility") == "private"
-        assert elems[1].get(f"{XMI}type") == "uml:Package"
-        assert elems[2].get("name") == "B"
-        assert elems[2].get("visibility") == "public"
 
-        assert elems[1].getchildren()[0].get("name") == "B"
-        assert elems[1].getchildren()[0].get(f"{XMI}type") == "uml:Package"
+    def test_uml_package(self, setup):
+        root = self._generate(setup, test_variations.package_variations)
 
-        assert elems[1].getchildren()[1].get("name") == "Z"
-        assert elems[1].getchildren()[1].get(f"{XMI}type") == "uml:Class"
+        elem = self._get_packaged_element_by_name(root, "A")
+        assert elem.get("visibility") == "private"
+        assert elem.get(f"{XMI}type") == "uml:Package"
 
-        assert elems[2].getchildren()[0].get("name") == "X"
-        assert elems[2].getchildren()[0].get(f"{XMI}type") == "uml:Class"
+        elem2 = self._get_packaged_element_by_name(root, "B")
+        assert elem2.get("visibility") == "public"
+        assert elem2.get(f"{XMI}type") == "uml:Package"
+        assert elem2.getparent().get("name") == "A"
 
-        assert elems[3].getchildren()[0].get("name") == "Y"
-        assert elems[3].getchildren()[0].get(f"{XMI}type") == "uml:Class"
+        assert elem.find("./*[2]").get("name") == "Z"
+        assert elem.find("./*[2]").get(f"{XMI}type") == "uml:Class"
 
-    def test_uml_diagram(self, setup):
-        sofa_root = self._get_root(setup, test_variations.diagram_variations)
-        diagrams = sofa_root.diagrams
-        assert diagrams.elems[0].get_name() == "X"
-        assert diagrams.elems[1].get_name() == "X and Y"
-        assert diagrams.elems[2].get_type() == DiagramType.COMPONENT
+        assert elem2.find("./*[1]").get("name") == "X"
+        assert elem2.find("./*[1]").get(f"{XMI}type") == "uml:Class"
 
-        components = sofa_root.components
-        assert components[0].get_name() == "A"
-        assert components[0].diagrams()[0].get_name() == "N_diagram"
-        assert components[0].diagrams()[0].get_type() == DiagramType.COMPONENT
+        elem3 = self._get_packaged_element_by_name(root, "C")
+        assert elem3.get(f"{XMI}type") == "uml:Package"
+        assert elem3.find("./*[1]").get("name") == "Y"
+        assert elem3.find("./*[1]").get(f"{XMI}type") == "uml:Class"
+
+    def test_uml_diagram(self, setup): ... # Not implemented yet
 
     def test_uml_sereotype(self, setup):
-        sofa_root = self._get_root(setup, test_variations.stereotype_variations)
-        stereotypes = sofa_root.stereotype_profiles
-        assert stereotypes.elems[0].get_name() == "Abc"
-        assert stereotypes.elems[1].get_name() == "Def"
-        assert stereotypes.elems[0].stereotypes == ["A123", "B234"]
-        assert stereotypes.elems[1].stereotypes == ["D123"]
+        root = self._generate(setup, test_variations.stereotype_variations)
 
-        components = sofa_root.components
-        assert components[0].stereotypes()[0].get_name() == "B234"
+        assert "abc" in root.nsmap and root.nsmap["abc"] == "Abc"
+        assert "def" in root.nsmap and root.nsmap["def"] == "Def"
 
-        classes = sofa_root.classes
-        assert classes[0].stereotypes()[0].get_name() == "D123"
+        interface_id = setup.sofa_root.interfaces.elems[0].id
+        class_id = setup.sofa_root.classes[0].id
+        component_id = setup.sofa_root.components[0].id
 
-        interfaces = sofa_root.interfaces
-        assert interfaces[0].stereotypes()[0].get_name() == "A123"
-        assert interfaces[0].stereotypes()[1].get_name() == "D123"
+        assert root.find(f".//{{Abc}}A123[@base_Interface='{interface_id}']", namespaces=root.nsmap) is not None
+        assert root.find(f".//{{Def}}D123[@base_Interface='{interface_id}']", namespaces=root.nsmap) is not None
+        assert root.find(f".//{{Def}}D123[@base_Class='{class_id}']", namespaces=root.nsmap) is not None
+        assert root.find(f".//{{Abc}}B234[@base_Component='{component_id}']", namespaces=root.nsmap) is not None
 
     def test_uml_actor(self, setup):
-        sofa_root = self._get_root(setup, test_variations.actor_variations)
-        actors = sofa_root.actors
-        assert actors[0].get_name() == "A"
-        assert actors[1].get_name() == "B"
-        assert actors[1].description() == "Represents a b actor"
+        root = self._generate(setup, test_variations.actor_variations)
+
+        elem = self._get_packaged_element_by_name(root, "A")
+        assert elem.get(f"{XMI}type") == "uml:Actor"
+
+        elem2 = self._get_packaged_element_by_name(root, "B")
+        assert elem2.get(f"{XMI}type") == "uml:Actor"
+        comm = elem2.find(f"./{UML}ownedComment[@{XMI}type='uml:Comment']")
+        assert comm.get(f"{XMI}type") == "uml:Comment"
+        assert comm.get("body") == "Represents a b actor"
+        ann = comm.find(f"./{UML}annotatedElement")
+        assert ann.get(f"{XMI}idref") == elem2.get(f"{XMI}id")
+
+        assert root.find(f".//{{Efg}}E123[@base_Actor='{elem2.get(f"{XMI}id")}']", namespaces=root.nsmap) is not None
+
+        self._print_element(root)
 
     def test_uml_component(self, setup):
         sofa_root = self._get_root(setup, test_variations.component_variations)
