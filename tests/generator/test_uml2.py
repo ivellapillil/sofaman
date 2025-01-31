@@ -108,6 +108,9 @@ class TestUml2:
 
         elem2 = self._get_packaged_element_by_name(root, "B")
         assert elem2.get(f"{XMI}type") == "uml:Actor"
+
+        # Comments are the same for all different elements. So we test
+        # only one of them
         comm = elem2.find(f"./{UML}ownedComment[@{XMI}type='uml:Comment']")
         assert comm.get(f"{XMI}type") == "uml:Comment"
         assert comm.get("body") == "Represents a b actor"
@@ -116,60 +119,94 @@ class TestUml2:
 
         assert root.find(f".//{{Efg}}E123[@base_Actor='{elem2.get(f"{XMI}id")}']", namespaces=root.nsmap) is not None
 
-        self._print_element(root)
-
     def test_uml_component(self, setup):
-        sofa_root = self._get_root(setup, test_variations.component_variations)
-        components = sofa_root.components
-        assert components[0].get_name() == "A"
-        assert components[1].get_name() == "B"
-        assert components[1].description() == "Represents a B component"
-        assert components[1].ports()[0].get_name() == "8080"
-        assert components[1].ports()[1].get_name() == "R80"
-        # the other tests are same as archelement tests; see test_uml_class
+        root = self._generate(setup, test_variations.component_variations)
+
+        elem = self._get_packaged_element_by_name(root, "A")
+        assert elem.get(f"{XMI}type") == "uml:Component"
+
+        elem2 = self._get_packaged_element_by_name(root, "B")
+        assert elem2.get(f"{XMI}type") == "uml:Component"
+
+        # TODO: Need to add test for ports once there is the support for it
 
     def test_uml_class(self, setup):
-        sofa_root = self._get_root(setup, test_variations.class_variations)
-        clss = sofa_root.classes
-        assert clss[0].get_name() == "A"
-        assert clss[1].get_name() == "B"
-        assert clss[2].get_name() == "C"
+        root = self._generate(setup, test_variations.class_variations)
 
-        # The following belongs to ArchElement, so
-        # testing in class is enough
-        lits = clss[1].literals()
-        assert lits == ["C", "D"]
-        attrs = clss[1].attributes()
-        assert len(attrs) == 1
-        assert attrs[0].cardinality.to_numeric()[0]== 1 and attrs[0].cardinality.to_numeric()[1] == -1
-        assert attrs[0].visibility == Visibility.PUBLIC
-        assert attrs[0].type == "String"
-        ops = clss[1].operations()
-        assert ops[0].parameters[1].name == "two"
+        elem = self._get_packaged_element_by_name(root, "A")
+        assert elem.get(f"{XMI}type") == "uml:Class"
+
+        elem2 = self._get_packaged_element_by_name(root, "B")
+        assert elem2.get(f"{XMI}type") == "uml:Class"
+
+        lits = elem2.findall(f"./{UML}ownedLiteral")
+        assert len(lits) == 2
+        assert lits[0].get("name") == "C"
+        assert lits[1].get("name") == "D"
+
+        attr = elem2.findall(f"./{UML}ownedAttribute")
+        assert len(attr) == 1
+        assert attr[0].get("name") == "a"
+        lov = attr[0].find(f"./{UML}lowerValue")
+        lov.get("value") == "1"
+        lov.get("type") == "uml:LiteralInteger"
+        upv = attr[0].find(f"./{UML}upperValue")
+        upv.get("value") == "-1"
+        upv.get("type") == "uml:LiteralInteger"
+        attr[0].find(f"./{UML}type").get(f"{XMI}idref") == self._get_packaged_element_by_name(root, "String").get(f"{XMI}id")
+
+        oper = elem2.findall(f"./{UML}ownedOperation")
+        assert len(oper) == 2
+        assert oper[0].get("name") == "b"
+        p1 = oper[0].find(f"./{UML}ownedParameter[@name='one']")
+        p1.get("direction") == "in"
+        p1.get("type") == "String"
+        p2 = oper[0].find(f"./{UML}ownedParameter[@name='two']")
+        p2.get("direction") == "in"
+        p2.get("type") == "String"
+        p3 = oper[0].find(f"./{UML}ownedParameter[@name='three']")
+        p3.get("direction") == "return"
+        p3.get("type") == "String"
+
+        assert oper[1].get("name") == "c"
+        p1 = oper[1].find(f"./{UML}ownedParameter[@name='d']")
+        p1.get("direction") == "in"
+        p1.get("type") == "String"
+        p2 = oper[1].find(f"./{UML}ownedParameter[@name='e']")
+        p2.get("direction") == "in"
+        p2.get("type") == "String"
+        p3 = oper[1].find(f"./{UML}ownedParameter[@name='f']")
+        p3.get("direction") == "in"
+        p3.get("type") == "String"
+
+        elem3 = self._get_packaged_element_by_name(root, "C")
+        assert elem3.get(f"{XMI}type") == "uml:Class"
 
     def test_uml_relation(self, setup):
-        sofa_root = self._get_root(setup, test_variations.relation_variations)
-        relations = sofa_root.relations
-        assert relations[0].source.name == "A"
-        assert relations[0].target.name == "B"
-        assert relations[0].source.port == None
-        assert relations[0].target.port == None
-        assert relations[0].type == RelationType.COMPOSITION
-        assert relations[1].type == RelationType.ASSOCIATION
-        assert relations[2].type == RelationType.AGGREGATION
-        assert relations[3].type == RelationType.INHERITANCE
-        assert relations[4].type == RelationType.REALIZATION
-        assert relations[5].type == RelationType.BI_INFO_FLOW
+        root = self._generate(setup, test_variations.relation_variations)
+        self._print_element(root)
 
-        assert relations[6].type == RelationType.BI_ASSOCIATION
-        assert relations[6].source.cardinality.lowerBound == "0"
-        assert relations[6].source.cardinality.upperBound == "1"
-        assert relations[6].target.cardinality.to_numeric() == (1, -1)
+        cls_a = self._get_packaged_element_by_name(root, "A")
+        cls_b = self._get_packaged_element_by_name(root, "B")
 
-        assert relations[7].source.name == "A"
-        assert relations[7].target.name == "B"
-        assert relations[7].source.port.get_name() == "12"
-        assert relations[7].target.port.get_name() == "R01"
+        inh = cls_a.find(f"./{UML}generalization[@{XMI}type='uml:Generalization']", namespaces=NS_MAP)
+        assert inh.get("general") == cls_b.get(f"{XMI}id")
+
+        relz = root.getroottree().findall(f".//{UML}packagedElement[@{XMI}type='uml:Realization']", namespaces=NS_MAP)
+        assert len(relz) == 1
+        relz[0].get("client") == cls_a.get(f"{XMI}id")
+        relz[0].get("supplier") == cls_b.get(f"{XMI}id")
+
+        inflow = root.getroottree().findall(f".//{UML}packagedElement[@{XMI}type='uml:InformationFlow']", namespaces=NS_MAP)
+        assert len(inflow) == 2
+        inflow[0].get("informationSource") == cls_a.get(f"{XMI}id")
+        inflow[0].get("informationTarget") == cls_b.get(f"{XMI}id")
+        inflow[1].get("informationSource") == cls_b.get(f"{XMI}id")
+        inflow[1].get("informationTarget") == cls_a.get(f"{XMI}id")
+
+        assocs = root.getroottree().findall(f".//{UML}packagedElement[@{XMI}type='uml:Association']", namespaces=NS_MAP)
+        assert len(assocs) == 4
+        # TODO: Add more tests for associations
 
     def test_uml_primitive(self, setup):
         sofa_root = self._get_root(setup, test_variations.primitives_variations)

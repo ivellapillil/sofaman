@@ -128,12 +128,12 @@ class XmiVisitor(Visitor):
     def _get_owned_end_elem(self, relation_elem):
         return relation_elem.find(UML + "ownedEnd")
 
-    def _owned_literal(self, parent, obj, name):
+    def _owned_literal(self, context, parent, obj, name):
         elem = SubElement(parent, UML + "ownedLiteral", nsmap=NS_MAP)
         elem.set("name", name)
         self._id_attr(elem, obj.id)
         self._register(obj, elem)
-        self._common_aspects(elem, obj)
+        self._common_aspects(context, elem, obj)
         return elem
 
     def _owned_attribute(self, context, parent, attr):
@@ -329,7 +329,7 @@ class XmiVisitor(Visitor):
         elif relation.type == RelationType.REALIZATION:
             return "Realization"
         elif relation.type == RelationType.INHERITANCE:
-            return "Inheritance"
+            return "Generalization"
         elif relation.type == RelationType.AGGREGATION:
             return "Association"
         elif relation.type == RelationType.COMPOSITION:
@@ -394,7 +394,7 @@ class XmiVisitor(Visitor):
         if lits:
             for i in lits:
                 if type(i) is not str: raise AssertionError("Literals must be strings")
-                self._owned_literal(elem, obj, i)
+                self._owned_literal(context, elem, obj, i)
     
         attrs = obj.attributes()
         if attrs:

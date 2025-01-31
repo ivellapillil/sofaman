@@ -65,6 +65,8 @@ def component_variations():
 
 def relation_variations():
     return dedent("""
+                class A
+                class B
                 relation A composes B
                 relation A associates B
                 relation A aggregates B
@@ -115,6 +117,7 @@ def class_variations():
                             parameters: [d, e, f]
                 class C:
                     literals: [C, D]
+                class String
     """)
 
 def interface_variations():

@@ -1254,8 +1254,6 @@ packages:
   - python_abi 3.13.* *_cp313
   constrains:
   - __glibc >=2.17
-  arch: x86_64
-  platform: linux
   license: Apache-2.0 AND BSD-3-Clause AND PSF-2.0 AND MIT
   license_family: BSD
   purls:
@@ -1269,8 +1267,6 @@ packages:
   - expat >=2.4.2,<3.0a0
   - libgcc-ng >=9.4.0
   - libglib >=2.70.2,<3.0a0
-  arch: x86_64
-  platform: linux
   license: GPL-2.0-or-later
   license_family: GPL
   purls: []
@@ -1325,8 +1321,6 @@ packages:
   - __glibc >=2.17,<3.0.a0
   - libexpat 2.6.4 h5888daf_0
   - libgcc >=13
-  arch: x86_64
-  platform: linux
   license: MIT
   license_family: MIT
   purls: []
@@ -1858,8 +1852,6 @@ packages:
   - pcre2 >=10.44,<10.45.0a0
   constrains:
   - glib 2.82.2 *_1
-  arch: x86_64
-  platform: linux
   license: LGPL-2.1-or-later
   purls: []
   size: 3923974
@@ -1879,8 +1871,6 @@ packages:
   md5: d66573916ffcf376178462f1b61c941e
   depends:
   - libgcc-ng >=12
-  arch: x86_64
-  platform: linux
   license: LGPL-2.1-only
   purls: []
   size: 705775
@@ -2345,8 +2335,6 @@ packages:
   - bzip2 >=1.0.8,<2.0a0
   - libgcc-ng >=12
   - libzlib >=1.3.1,<2.0a0
-  arch: x86_64
-  platform: linux
   license: BSD-3-Clause
   license_family: BSD
   purls: []
@@ -2635,8 +2623,6 @@ packages:
   depends:
   - python >=3.13.0rc2,<3.14.0a0
   - python_abi 3.13.* *_cp313
-  arch: x86_64
-  platform: win
   license: BSD-3-Clause
   license_family: BSD
   purls:
@@ -2714,8 +2700,6 @@ packages:
   - jeepney >=0.6
   - python >=3.13.0rc1,<3.14.0a0
   - python_abi 3.13.* *_cp313
-  arch: x86_64
-  platform: linux
   license: BSD-3-Clause
   license_family: BSD
   purls:
@@ -2765,7 +2749,7 @@ packages:
 - pypi: .
   name: sofaman
   version: 0.1.0
-  sha256: bd2c89538d4f6ed177a67326d594e6b8d04a78624120b9e2c14db61ca8991612
+  sha256: b485f1fe70a155d6d4b2d68cce67084f997f3c37e797627af811cb964b7f9b18
   requires_dist:
   - lark>=1.2
   - session-info>=1.0.0,<2
@@ -3058,8 +3042,6 @@ packages:
   - libstdcxx >=13
   constrains:
   - __glibc >=2.17
-  arch: x86_64
-  platform: linux
   license: Apache-2.0 OR MIT
   purls: []
   size: 11423222
@@ -3072,8 +3054,6 @@ packages:
   - libcxx >=18
   constrains:
   - __osx >=10.13
-  arch: x86_64
-  platform: osx
   license: Apache-2.0 OR MIT
   purls: []
   size: 10994823
@@ -3086,8 +3066,6 @@ packages:
   - libcxx >=18
   constrains:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   license: Apache-2.0 OR MIT
   purls: []
   size: 9950241
@@ -3099,8 +3077,6 @@ packages:
   - ucrt >=10.0.20348.0
   - vc >=14.2,<15
   - vc14_runtime >=14.29.30139
-  arch: x86_64
-  platform: win
   license: Apache-2.0 OR MIT
   purls: []
   size: 11717668

@@ -50,7 +50,7 @@ pytest = "*"
 pytest-cov = "*"
 
 [tool.pixi.feature.test.tasks]
-test = "pytest"
+test = "pytest -s"
 test-debug = "pytest --trace"
 coverage = "pytest --cov=sofaman tests"
 
