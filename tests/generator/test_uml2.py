@@ -206,6 +206,12 @@ class TestUml2:
 
         assocs = root.getroottree().findall(f".//{UML}packagedElement[@{XMI}type='uml:Association']", namespaces=NS_MAP)
         assert len(assocs) == 4
+        compos = assocs[0]
+        compos.find(f"./{UML}memberEnd[1]").get(f'{XMI}idref') == f"{cls_a.find(f'./{UML}ownedAttribute[1]').get(f'{XMI}id')}"
+        compos_ownedend = compos.find(f"./{UML}ownedEnd")
+        compos_ownedend.get(f"{XMI}association") == compos.get(f"{XMI}id")
+        compos_ownedend.find(f"./{UML}type").get(f"{XMI}idref") == cls_a.get(f"{XMI}id")
+        compos.find(f"./{UML}memberEnd[2]") == f"{cls_b.find(f'./{UML}ownedAttribute[1]').get(f'{XMI}id')}"
         # TODO: Add more tests for associations
 
     def test_uml_primitive(self, setup):
