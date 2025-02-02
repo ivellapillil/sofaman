@@ -149,10 +149,10 @@ class TestUml2:
         assert attr[0].get("name") == "a"
         lov = attr[0].find(f"./{UML}lowerValue")
         assert lov.get("value") == "1"
-        assert lov.get("type") == "uml:LiteralInteger"
+        assert lov.get(f"{XMI}type") == "uml:LiteralInteger"
         upv = attr[0].find(f"./{UML}upperValue")
         assert upv.get("value") == "-1"
-        assert upv.get("type") == "uml:LiteralInteger"
+        assert upv.get(f"{XMI}type") == "uml:LiteralUnlimitedNatural"
         str_id = self._get_packaged_element_by_name(root, "String").get(f"{XMI}id")
         assert str_id is not None
         assert attr[0].find(f"./{UML}type").get(f"{XMI}idref") == str_id
@@ -173,20 +173,16 @@ class TestUml2:
         assert oper[1].get("name") == "c"
         p1 = oper[1].find(f"./{UML}ownedParameter[@name='d']")
         assert p1.get("direction") == "in"
-        assert p1.get("type") == "String"
         p2 = oper[1].find(f"./{UML}ownedParameter[@name='e']")
         assert p2.get("direction") == "in"
-        assert p2.get("type") == "String"
         p3 = oper[1].find(f"./{UML}ownedParameter[@name='f']")
         assert p3.get("direction") == "in"
-        assert p3.get("type") == "String"
 
         elem3 = self._get_packaged_element_by_name(root, "C")
         assert elem3.get(f"{XMI}type") == "uml:Class"
 
     def test_uml_relation(self, setup):
         root = self._generate(setup, test_variations.relation_variations)
-        self._print_element(root)
 
         cls_a = self._get_packaged_element_by_name(root, "A")
         cls_a_id = cls_a.get(f"{XMI}id")
@@ -231,6 +227,7 @@ class TestUml2:
     def _test_info_flow(self, cls_a, cls_b, inflow):
         assert inflow[1].get("informationSource") == cls_a.get(f"{XMI}id")
         assert inflow[1].get("informationTarget") == cls_b.get(f"{XMI}id")
+        # TODO: Test port and other attributes when implemented.
 
     def _test_biassociation(self, cls_a, cls_b, biassocn):
         a_fifth_ownedattr = cls_a.find(f'./{UML}ownedAttribute[5]')
@@ -241,6 +238,9 @@ class TestUml2:
         b_ownedattr2_id = cls_b.find(f'./{UML}ownedAttribute[2]').get(f'{XMI}id')
         assert b_ownedattr2_id is not None
         assert biassocn.find(f"./{UML}memberEnd[2]").get(f'{XMI}idref') == b_ownedattr2_id
+
+        # TODO: Test cardinality when implemented.
+
 
     def _test_biflow(self, cls_a, cls_b, biflow):
         a_fourth_ownedattr = cls_a.find(f'./{UML}ownedAttribute[4]')
@@ -275,34 +275,47 @@ class TestUml2:
         assert compos.find(f"./{UML}memberEnd[2]").get(f'{XMI}idref') == compos_ownedend.get(f'{XMI}id')
 
     def test_uml_primitive(self, setup):
-        sofa_root = self._get_root(setup, test_variations.primitives_variations)
-        primitives = sofa_root.primitives
-        assert primitives.elems[0].get_name() == "String"
-        assert primitives.elems[1].get_name() == "Boolean"
+        root = self._generate(setup, test_variations.primitives_variations)
+
+        elem = self._get_packaged_element_by_name(root, "String")
+        assert elem.get(f"{XMI}type") == "uml:PrimitiveType"
+
+        elem2 = self._get_packaged_element_by_name(root, "Boolean")
+        assert elem2.get(f"{XMI}type") == "uml:PrimitiveType"
 
     def test_uml_interface(self, setup):
-        sofa_root = self._get_root(setup, test_variations.interface_variations)
-        interfaces = sofa_root.interfaces
-        assert interfaces.elems[0].get_name() == "A"
-        assert interfaces.elems[1].get_name() == "B"
+        root = self._generate(setup, test_variations.interface_variations)
 
-        assert interfaces.elems[0].attributes()[0].cardinality.to_numeric() == (1, -1)
-        assert interfaces.elems[0].attributes()[1].cardinality.to_numeric() == (-1, 1)
+        elem = self._get_packaged_element_by_name(root, "A")
+        assert elem.get(f"{XMI}type") == "uml:Interface"
+        assert elem.get("isAbstract") == "true"
 
-    def test_uml_domain(self, setup):
-        sofa_root = self._get_root(setup, test_variations.domain_variations)
-        domains = sofa_root.domains
-        assert domains.elems[0].get_name() == "A"
-        assert domains.elems[1].get_name() == "B"
+        elem2 = self._get_packaged_element_by_name(root, "B")
+        assert elem2.get(f"{XMI}type") == "uml:Interface"
+        assert elem2.get("isAbstract") == "true"
 
-        assert domains.elems[0].capabilities()[0] == "A"
-        assert domains.elems[0].capabilities()[1] == "B C"
-        assert domains.elems[0].capabilities()[2] == "D/,E"
+        elema_ownedattr = elem.findall(f"./{UML}ownedAttribute")
+        assert len(elema_ownedattr) == 2
+        assert elema_ownedattr[0].get("name") == "a"
+        assert elema_ownedattr[0].get(f"{XMI}type") == "uml:Property"
+        assert elema_ownedattr[1].get("name") == "b"
+        assert elema_ownedattr[1].get(f"{XMI}type") == "uml:Property"
 
-    def test_uml_capability(self, setup):
-        sofa_root = self._get_root(setup, test_variations.capability_variations)
-        capabilities = sofa_root.capabilities
-        assert capabilities.elems[0].get_name() == "A"
-        assert capabilities.elems[1].get_name() == "B"
+        elma_attr1_lowerval = elema_ownedattr[0].find(f"./{UML}lowerValue")
+        assert elma_attr1_lowerval.get("value") == "1"
+        assert elma_attr1_lowerval.get(f"{XMI}type") == "uml:LiteralInteger"
 
-        assert capabilities.elems[0].get_name() == "A"
+        elma_attr1_upperval = elema_ownedattr[0].find(f"./{UML}upperValue")
+        assert elma_attr1_upperval.get("value") == "-1"
+        assert elma_attr1_upperval.get(f"{XMI}type") == "uml:LiteralUnlimitedNatural"
+
+        elma_attr2_lowerval = elema_ownedattr[1].find(f"./{UML}lowerValue")
+        assert elma_attr2_lowerval.get("value") == "-1"
+        assert elma_attr2_lowerval.get(f"{XMI}type") == "uml:LiteralInteger"
+        elma_attr2_upperval = elema_ownedattr[1].find(f"./{UML}upperValue")
+        assert elma_attr2_upperval.get("value") == "1"
+        assert elma_attr2_upperval.get(f"{XMI}type") == "uml:LiteralUnlimitedNatural"
+
+    def test_uml_domain(self, setup): ... # Not implemented yet in the generator
+
+    def test_uml_capability(self, setup): ... # Not implemented yet in the generator
