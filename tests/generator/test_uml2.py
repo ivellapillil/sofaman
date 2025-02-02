@@ -148,36 +148,38 @@ class TestUml2:
         assert len(attr) == 1
         assert attr[0].get("name") == "a"
         lov = attr[0].find(f"./{UML}lowerValue")
-        lov.get("value") == "1"
-        lov.get("type") == "uml:LiteralInteger"
+        assert lov.get("value") == "1"
+        assert lov.get("type") == "uml:LiteralInteger"
         upv = attr[0].find(f"./{UML}upperValue")
-        upv.get("value") == "-1"
-        upv.get("type") == "uml:LiteralInteger"
-        attr[0].find(f"./{UML}type").get(f"{XMI}idref") == self._get_packaged_element_by_name(root, "String").get(f"{XMI}id")
+        assert upv.get("value") == "-1"
+        assert upv.get("type") == "uml:LiteralInteger"
+        str_id = self._get_packaged_element_by_name(root, "String").get(f"{XMI}id")
+        assert str_id is not None
+        assert attr[0].find(f"./{UML}type").get(f"{XMI}idref") == str_id
 
         oper = elem2.findall(f"./{UML}ownedOperation")
         assert len(oper) == 2
         assert oper[0].get("name") == "b"
         p1 = oper[0].find(f"./{UML}ownedParameter[@name='one']")
-        p1.get("direction") == "in"
-        p1.get("type") == "String"
+        assert p1.get("direction") == "in"
+        assert p1.get("type") == "String"
         p2 = oper[0].find(f"./{UML}ownedParameter[@name='two']")
-        p2.get("direction") == "in"
-        p2.get("type") == "String"
+        assert p2.get("direction") == "in"
+        assert p2.get("type") == "String"
         p3 = oper[0].find(f"./{UML}ownedParameter[@name='three']")
-        p3.get("direction") == "return"
-        p3.get("type") == "String"
+        assert p3.get("direction") == "return"
+        assert p3.get("type") == "String"
 
         assert oper[1].get("name") == "c"
         p1 = oper[1].find(f"./{UML}ownedParameter[@name='d']")
-        p1.get("direction") == "in"
-        p1.get("type") == "String"
+        assert p1.get("direction") == "in"
+        assert p1.get("type") == "String"
         p2 = oper[1].find(f"./{UML}ownedParameter[@name='e']")
-        p2.get("direction") == "in"
-        p2.get("type") == "String"
+        assert p2.get("direction") == "in"
+        assert p2.get("type") == "String"
         p3 = oper[1].find(f"./{UML}ownedParameter[@name='f']")
-        p3.get("direction") == "in"
-        p3.get("type") == "String"
+        assert p3.get("direction") == "in"
+        assert p3.get("type") == "String"
 
         elem3 = self._get_packaged_element_by_name(root, "C")
         assert elem3.get(f"{XMI}type") == "uml:Class"
@@ -187,32 +189,90 @@ class TestUml2:
         self._print_element(root)
 
         cls_a = self._get_packaged_element_by_name(root, "A")
+        cls_a_id = cls_a.get(f"{XMI}id")
+        assert cls_a_id is not None
+
         cls_b = self._get_packaged_element_by_name(root, "B")
+        cls_b_id = cls_b.get(f"{XMI}id")
+        assert cls_b_id is not None
 
         inh = cls_a.find(f"./{UML}generalization[@{XMI}type='uml:Generalization']", namespaces=NS_MAP)
-        assert inh.get("general") == cls_b.get(f"{XMI}id")
+        assert inh.get("general") == cls_b_id
 
         relz = root.getroottree().findall(f".//{UML}packagedElement[@{XMI}type='uml:Realization']", namespaces=NS_MAP)
         assert len(relz) == 1
-        relz[0].get("client") == cls_a.get(f"{XMI}id")
-        relz[0].get("supplier") == cls_b.get(f"{XMI}id")
+        self._test_generalization(cls_a, cls_b, relz)
 
         inflow = root.getroottree().findall(f".//{UML}packagedElement[@{XMI}type='uml:InformationFlow']", namespaces=NS_MAP)
         assert len(inflow) == 2
-        inflow[0].get("informationSource") == cls_a.get(f"{XMI}id")
-        inflow[0].get("informationTarget") == cls_b.get(f"{XMI}id")
-        inflow[1].get("informationSource") == cls_b.get(f"{XMI}id")
-        inflow[1].get("informationTarget") == cls_a.get(f"{XMI}id")
+        self._test_info_flow(cls_a, cls_b, inflow)
 
         assocs = root.getroottree().findall(f".//{UML}packagedElement[@{XMI}type='uml:Association']", namespaces=NS_MAP)
         assert len(assocs) == 4
         compos = assocs[0]
-        compos.find(f"./{UML}memberEnd[1]").get(f'{XMI}idref') == f"{cls_a.find(f'./{UML}ownedAttribute[1]').get(f'{XMI}id')}"
+        self._test_composition(cls_a, cls_b, compos)
+
+        assocn = assocs[1]
+        self._test_association(cls_a, cls_b, assocn)
+
+        aggr = assocs[2]
+        self._test_aggregation(cls_a, aggr)
+
+        biassocn = assocs[3]
+        self._test_biassociation(cls_a, cls_b, biassocn)
+
+        biflow = inflow[0]
+        self._test_biflow(cls_a, cls_b, biflow)
+
+    def _test_generalization(self, cls_a, cls_b, relz):
+        assert relz[0].get("client") == cls_a.get(f"{XMI}id")
+        assert relz[0].get("supplier") == cls_b.get(f"{XMI}id")
+
+    def _test_info_flow(self, cls_a, cls_b, inflow):
+        assert inflow[1].get("informationSource") == cls_a.get(f"{XMI}id")
+        assert inflow[1].get("informationTarget") == cls_b.get(f"{XMI}id")
+
+    def _test_biassociation(self, cls_a, cls_b, biassocn):
+        a_fifth_ownedattr = cls_a.find(f'./{UML}ownedAttribute[5]')
+        a_fifth_ownedattr_id = a_fifth_ownedattr.get(f'{XMI}id')
+        assert a_fifth_ownedattr_id is not None
+        assert biassocn.find(f"./{UML}memberEnd[1]").get(f'{XMI}idref') == a_fifth_ownedattr_id
+
+        b_ownedattr2_id = cls_b.find(f'./{UML}ownedAttribute[2]').get(f'{XMI}id')
+        assert b_ownedattr2_id is not None
+        assert biassocn.find(f"./{UML}memberEnd[2]").get(f'{XMI}idref') == b_ownedattr2_id
+
+    def _test_biflow(self, cls_a, cls_b, biflow):
+        a_fourth_ownedattr = cls_a.find(f'./{UML}ownedAttribute[4]')
+        a_fourth_ownedattr_id = a_fourth_ownedattr.get(f'{XMI}id')
+        assert biflow.find(f"./{UML}memberEnd[1]").get(f'{XMI}idref') == a_fourth_ownedattr_id
+        cls_b_ownedattr_2 = cls_b.find(f'./{UML}ownedAttribute[1]').get(f'{XMI}id')
+        assert cls_b_ownedattr_2 is not None
+        assert biflow.find(f"./{UML}memberEnd[2]").get(f'{XMI}idref') == cls_b_ownedattr_2
+
+    def _test_aggregation(self, cls_a, aggr):
+        assert aggr.find(f"./{UML}memberEnd[1]").get(f'{XMI}idref') == cls_a.find(f'./{UML}ownedAttribute[3]').get(f'{XMI}id')
+        assert cls_a.find(f'./{UML}ownedAttribute[3]').get("aggregation") == "shared"
+        aggr_ownedend = aggr.find(f"./{UML}ownedEnd")
+        assert aggr_ownedend.get(f"{XMI}association") == aggr.get(f"{XMI}id")
+        assert aggr_ownedend.find(f"./{UML}type").get(f"{XMI}idref") == cls_a.get(f"{XMI}id")
+        assert aggr.find(f"./{UML}memberEnd[2]").get(f'{XMI}idref') == aggr_ownedend.get(f'{XMI}id')
+
+    def _test_association(self, cls_a, cls_b, assocn):
+        assert assocn.find(f"./{UML}memberEnd[1]").get(f'{XMI}idref') == cls_a.find(f'./{UML}ownedAttribute[2]').get(f'{XMI}id')
+        assert cls_a.find(f'./{UML}ownedAttribute[2]').get("aggregation") == "none"
+        assocn_ownedend = assocn.find(f"./{UML}ownedEnd")
+        assert assocn_ownedend.get(f"{XMI}association") == assocn.get(f"{XMI}id")
+        assert assocn_ownedend.find(f"./{UML}type").get(f"{XMI}idref") == cls_a.get(f"{XMI}id")
+        assert assocn.find(f"./{UML}memberEnd[2]").get(f'{XMI}idref') == assocn_ownedend.get(f'{XMI}id')
+
+    def _test_composition(self, cls_a, cls_b, compos):
+        assert compos.find(f"./{UML}memberEnd[1]").get(f'{XMI}idref') == cls_a.find(f'./{UML}ownedAttribute[1]').get(f'{XMI}id')
+        assert cls_a.find(f'./{UML}ownedAttribute[1]').get("aggregation") == "composite"
         compos_ownedend = compos.find(f"./{UML}ownedEnd")
-        compos_ownedend.get(f"{XMI}association") == compos.get(f"{XMI}id")
-        compos_ownedend.find(f"./{UML}type").get(f"{XMI}idref") == cls_a.get(f"{XMI}id")
-        compos.find(f"./{UML}memberEnd[2]") == f"{cls_b.find(f'./{UML}ownedAttribute[1]').get(f'{XMI}id')}"
-        # TODO: Add more tests for associations
+        assert compos_ownedend.get(f"{XMI}association") == compos.get(f"{XMI}id")
+        assert compos_ownedend.find(f"./{UML}type").get(f"{XMI}idref") == cls_a.get(f"{XMI}id")
+        assert compos.find(f"./{UML}memberEnd[2]").get(f'{XMI}idref') == compos_ownedend.get(f'{XMI}id')
 
     def test_uml_primitive(self, setup):
         sofa_root = self._get_root(setup, test_variations.primitives_variations)
