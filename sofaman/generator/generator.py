@@ -4,6 +4,8 @@ import pathlib
 
 class Context(Protocol):
     def write(self, content): raise NotImplementedError
+    def write_ln(self, content = ""):
+        self.write(content + "\n")
 
 class BufferContext(Context):
     
@@ -28,9 +30,6 @@ class FileContext(Context):
         with open(self.out_file, "a") as o:
             o.write(content)
     
-    def write_ln(self, content = ""):
-        self.write(content + "\n")
-
     def name(self):
         return pathlib.PurePath(self.out_file).stem
 

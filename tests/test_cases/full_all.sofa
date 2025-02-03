@@ -46,6 +46,7 @@ component CustomerDB:
 
 component CustomerSearch(RESTService):
     package: Retail
+    ports: [443]
 
 relation CustomerSearch@443 flow CustomerDB@REST1:
     name: Execute search query

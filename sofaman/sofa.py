@@ -1,6 +1,6 @@
-from parser.sofa_parser import SofaParser
-from ir.ir import SofaIR
-from generator.generator import Generator
+from sofaman.parser.sofa_parser import SofaParser
+from sofaman.ir.ir import SofaIR
+from sofaman.generator.generator import Generator
 
 class _Cached:
     ir = SofaIR()

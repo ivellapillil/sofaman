@@ -1,11 +1,13 @@
 
-from generator.generator import FileContext, Visitor
-from ir.model import RelationType, Attribute, Port
+from textwrap import dedent
+from sofaman.generator.generator import FileContext, Visitor
+from sofaman.ir.model import RelationType, Attribute, Port
 
 class PumlContext(FileContext):
 
-    def __init__(self, out_file):
+    def __init__(self, out_file, desc_as_notes = False):
         super().__init__(out_file)
+        self.desc_as_notes = desc_as_notes
 
 class PumlVisitor(Visitor):
 
@@ -17,20 +19,45 @@ class PumlVisitor(Visitor):
 
     def visit_root(self, context, sofa_root): 
         context.write_ln(f"@startuml {context.name()}\nallowmixing")
+    
+    def visit_package(self, context, package): 
+        ... # Packages are rendered only when they are referenced by other objects
+
+    def _wrap_inside_package(self, context, obj, content):
+        if obj.package() is None: return content
+        return f"\npackage {obj.package()} {{ {content} \n}}"
+    
+    def _sterotype(self, context, obj):
+        if obj.stereotypes() is None: return ""
+        stereotypes = ""
+        for s in obj.stereotypes():
+            stereotypes += f"<<{s}>>"
+        return stereotypes
+
+    def _description(self, context, obj):
+        if not context.desc_as_notes or obj.description() is None: return ""
+        context.write_ln(dedent(f"""
+            note top of {obj.get_name()}
+                {obj.description()}
+            end note
+        """))
 
     def visit_primitive(self, context, primitive): 
-        context.write_ln(f"\nclass {primitive.get_name()}")
+        context.write_ln(self._wrap_inside_package(context, primitive, f"\nclass {primitive.get_name()} {self._sterotype(context, primitive)}"))
+        self._description(context, primitive)
 
     def visit_diagram(self, context, diagram): ...
 
     def visit_stereotype_profile(self, context, stereotype): ...
     
     def visit_actor(self, context, actor): 
-        context.write_ln(f"\nactor {actor.get_name()}")
+        context.write_ln(self._wrap_inside_package(context, actor, f"\nactor {actor.get_name()} {self._sterotype(context, actor)}"))
+        self._description(context, actor)
 
     def visit_component(self, context, component):
-        context.write(f"\ncomponent {component.get_name()}")
+        context.write(self._wrap_inside_package(context, component, f"\ncomponent {component.get_name()} {self._sterotype(context, component)}"))
         self._gen_ports(context, component)
+        self._description(context, component)
 
     def _gen_ports(self, context, obj):
         ports = obj.list_values("ports", Port)
@@ -56,24 +83,34 @@ class PumlVisitor(Visitor):
     
     def _as_arrow(self, context, relation):
         match relation.type:
-            case RelationType.BI_ASSOCIATION:
-                return "<-->"
+            case RelationType.COMPOSITION:
+                return "*-->"
+            case RelationType.AGGREGATION:
+                return "o-->"
+            case RelationType.INHERITANCE:
+                return "--|>"
+            case RelationType.REALIZATION:
+                return "..|>"
             case RelationType.BI_INFO_FLOW:
                 return "<..>"
             case RelationType.ASSOCIATION:
                 return "-->"
             case RelationType.INFORMATION_FLOW:
                 return "..>"
+            case RelationType.BI_ASSOCIATION:
+                return "<-->"
             case _:
                 return "--"
     
     def visit_interface(self, context, interface): 
-        context.write_ln(f"\ninterface {interface.get_name()}")
+        context.write_ln(self._wrap_inside_package(context, interface, f"\ninterface {interface.get_name()} {self._sterotype(context, interface)}"))
         self._gen_attributes(context, interface)
+        self._description(context, interface)
 
     def visit_class(self, context, clazz): 
-        context.write(f"\nclass {clazz.get_name()}")
+        context.write(self._wrap_inside_package(context, clazz, f"\nclass {clazz.get_name()} {self._sterotype(context, clazz)}"))
         self._gen_attributes(context, clazz)
+        self._description(context, clazz)
         
     def _gen_attributes(self, context, obj):
         attrs = obj.attributes()

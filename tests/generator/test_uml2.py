@@ -29,7 +29,7 @@ class _XMLContext:
     
     def flush(self): ... # Do nothing. 
 
-class TestUml2:
+class TestUml2Generator:
 
     @pytest.fixture
     def setup(self):
