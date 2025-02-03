@@ -1,0 +1,34 @@
+#
+# Sample sofa model.
+#
+
+package Retail.CRM:
+    visibility: public
+
+stereotype Regulatory: [GDPR]
+stereotype Security: [PIDRelevant]
+
+actor Client
+actor RelationshipManager
+
+component RESTService:
+    ports: [443]
+
+component CustomerDB:
+    name: Customer Database
+    description:|
+        Holds customer data
+    stereotypes: [Regulatory.GDPR]
+    package: Retail.CRM
+    ports: [443, REST]
+
+component CustomerSearch(RESTService):
+    package: Retail
+    ports: [443]
+
+relation CustomerSearch@443 flow CustomerDB@REST:
+    name: Execute search query
+    description: |
+        Search for customers by name or address
+    stereotypes: [Regulatory.GDPR]
+

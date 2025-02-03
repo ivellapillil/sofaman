@@ -59,22 +59,23 @@ class PumlVisitor(Visitor):
         self._description(context, actor)
 
     def visit_component(self, context, component):
-        context.write(self._wrap_inside_package(context, component, f"\ncomponent {component.get_name()} {self._sterotype(context, component)}"))
-        self._gen_ports(context, component)
+        context.write(self._wrap_inside_package(context, component, f"\ncomponent {component.get_name()} {self._sterotype(context, component)} {self._gen_ports(context, component)}"))
         self._description(context, component)
 
     def _gen_ports(self, context, obj):
+        content = ""
         ports = obj.list_values("ports", Port)
 
-        if not ports: return
+        if not ports: return ""
 
-        context.write_ln("{")
+        content += "{\n"
 
         for port in ports:
-            context.write(self.INDENT)
-            context.write_ln(f"port {port.get_name()}")
+            content += self.INDENT
+            content += f"port {port.get_name()}\n"
 
-        context.write_ln("}")
+        content += "}\n"
+        return content
 
     def visit_relation(self, context, relation): 
         context.write_ln(f"\n{self._determine_source(context, relation)} {self._as_arrow(context, relation)} {self._determine_target(context, relation)}")

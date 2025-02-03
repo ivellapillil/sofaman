@@ -68,7 +68,7 @@ class TestPumlGenerator:
                                 interface C <<A123>><<D123>>
 
                                 class B <<D123>>
-                                component A <<B234>>
+                                component A <<B234>> 
                                 @enduml
                              """)
 
@@ -96,8 +96,8 @@ class TestPumlGenerator:
                                     @startuml Test
                                     allowmixing
 
-                                    component A 
-                                    component B {
+                                    component A  
+                                    component B  {
                                         port 8080
                                         port R80
                                     }
