@@ -18,7 +18,7 @@ dependencies = [
     "session-info >=1.0.0,<2",
     "jsonpickle",
     "lxml",
-    "fire >=0.7.0,<0.8"
+    "click"
 ]
 
 [project.urls]
@@ -48,6 +48,7 @@ build = ["build"]
 [tool.pixi.feature.test.dependencies]
 pytest = "*"
 pytest-cov = "*"
+pytest-mock = "*"
 
 [tool.pixi.feature.test.tasks]
 test = "pytest -s"
