@@ -19,28 +19,49 @@ NS_MAP = {
 }
 
 class XmiFlavor:
+    """
+    The different flavors of XMI. This is because some tools have different 
+    expectations on how the content is structured.
+    """
     NORMAL = 1
     SPARX_EA = 2
 
 class XmiContext(FileContext):
-
+    """
+    XMI context with content stored in a file.
+    """
     def __init__(self, out_file, mode=XmiFlavor.NORMAL):
         super().__init__(out_file)
         self.mode = mode
         self.root = None
 
     def is_sparx_ea(self):
+        """
+        Returns True if the XMI is for Sparx EA.
+        """
         return self.mode == XmiFlavor.SPARX_EA
 
     def get_content(self):
+        """
+        Generates a string representation of the XMI DOM.
+        """
         return str(etree.tostring(self.root, pretty_print=True), encoding="UTF8")
 
     def flush(self):
+        """
+        Saves the content to a file.
+        """
         self.write(self.get_content())
 
 class XmiVisitor(Visitor):
+    """
+    XMI visitor that generates XMI code.
+    """
 
     class RelationEndPoint:
+        """
+        The endpoint of a relation.
+        """
         def __init__(self, relation, relation_elem, endpoint_obj, endpoint_elem):
             self.relation = relation
             self.relation_elem = relation_elem

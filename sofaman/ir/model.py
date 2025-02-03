@@ -4,11 +4,17 @@ from abc import abstractmethod
 import uuid
 
 class SofaBase: 
+    """
+    Base class for all the elements in the sofa model.
+    """
 
     def __init__(self):
         self.id = str(uuid.uuid4())
 
 class PropertyContainer:
+    """
+    Base class for all the elements in the sofa model that can have properties.
+    """
 
     def __init__(self, props):
         self.props = props
@@ -17,11 +23,17 @@ class PropertyContainer:
         self.visibility = Visibility(props.get("visibility", Visibility.PRIVATE.value))
 
     def description(self):
+        """
+        Returns the description of the element.
+        """
         props = self.props
         if not "description" in props: return None
         return props['description']
     
     def stereotypes(self):
+        """
+        Returns the stereotypes of the element.
+        """
         if self._stereotype_refs:
             return self._stereotype_refs
         
@@ -33,6 +45,9 @@ class PropertyContainer:
         return self._stereotype_refs
 
     def diagrams(self):
+        """
+        Returns in which all diagrams the element is present.
+        """
         if self._diags:
             return self._diags
         
@@ -45,17 +60,30 @@ class PropertyContainer:
 
 @runtime_checkable
 class Named(Protocol):
+    """
+    Protocol for elements that have a name.
+    """
 
     @abstractmethod
-    def get_name(self) -> str: ...
+    def get_name(self) -> str: 
+        """
+        Returns the name of the element.
+        """
+        ...
 
     def get_qname(self) -> str:
+        """
+        Returns the fully qualified name of the element.
+        """
         return self.get_name()
 
     def __repr__(self):
         return self.get_name()
 
 class KeyValue(Named):
+    """
+    Represents a key-value pair.
+    """
     
     def __init__(self, key, value):
         self.key = key
@@ -65,15 +93,24 @@ class KeyValue(Named):
         return self.key
 
 class Struct:
+    """
+    Represents a structure with properties.
+    """
     def __init__(self, name, inheritance=[], properties={}):
         self.name = name.strip() # TODO: Workaround. Need to strip spaces in the parser itself.
         self.inheritance = inheritance
         self.properties = properties
     
     def set_properties(self, dict):
+        """
+        Set the properties of the structure.
+        """
         self.properties = dict
     
 class Literal(SofaBase, Named):
+    """
+    Represents a literal element. In XMI it is represented as a literal, while in PlantUML it is represented as as class.
+    """
 
     def __init__(self, name, value = ''):
         self.name = name
@@ -83,6 +120,9 @@ class Literal(SofaBase, Named):
         return self.name
 
 class Port(SofaBase, Named):
+    """
+    Represents a port of a component.
+    """
 
     def __init__(self, name):
         self.name = name
@@ -91,6 +131,9 @@ class Port(SofaBase, Named):
         return self.name
 
 class Cardinality:
+    """
+    Represents the cardinality of an attribute or a relation.
+    """
 
     def __init__(self, card_str: str = "0..1"):
         self.lowerBound,_ , self.upperBound = card_str.partition("..")
@@ -107,11 +150,17 @@ class Cardinality:
         return -1
 
 class Visibility(Enum):
+    """
+    Represents the visibility of an element.
+    """
     PRIVATE = "private"
     PUBLIC = "public"
     PROTECTED = "protected"
 
 class Attribute(SofaBase, Named, PropertyContainer):
+    """
+    Represents an attribute of a class, a component, interface etc.
+    """
 
     def __init__(self, name, props):
         SofaBase.__init__(self)
@@ -125,12 +174,18 @@ class Attribute(SofaBase, Named, PropertyContainer):
         return self.name
 
 class ParameterDirection(Enum):
+    """
+    Represents the direction of a parameter of an operation (whether it is passed as input or returned as value).
+    """
     IN = "in"
     OUT = "out"
     INOUT = "inout"
     RETURN = "return"
 
 class Parameter(SofaBase, Named, PropertyContainer):
+    """
+    Represents a parameter of an operation.
+    """
 
     def __init__(self, name, props):
         SofaBase.__init__(self)
@@ -143,6 +198,9 @@ class Parameter(SofaBase, Named, PropertyContainer):
         return self.name
 
 class Operation(SofaBase, Named, PropertyContainer):
+    """
+    Represents an operation of a class, a component, interface etc.
+    """
 
     def __init__(self, name, props):
         SofaBase.__init__(self)
@@ -166,6 +224,10 @@ class Operation(SofaBase, Named, PropertyContainer):
         return self.name
 
 class ArchElement(SofaBase, Named, PropertyContainer):
+    """
+    Common base class for all the architectural elements like class, component, interface, relation, etc.
+    """
+
     def __init__(self, struct):
         SofaBase.__init__(self)
         PropertyContainer.__init__(self, struct.properties)
@@ -185,16 +247,25 @@ class ArchElement(SofaBase, Named, PropertyContainer):
         return ".".join(reversed(names))
 
     def literals(self):
+        """
+        Returns the literals delcared by the element.
+        """
         props = self.struct.properties
         if not "literals" in props: return None
         return props['literals']
     
     def package(self):
+        """
+        Returns which package the element belongs to.
+        """
         props = self.struct.properties
         if not "package" in props: return None
         return props['package']
 
     def attributes(self):
+        """
+        Returns the attributes of the element.
+        """
         props = self.struct.properties
 
         if not "attributes" in props: return None
@@ -208,6 +279,9 @@ class ArchElement(SofaBase, Named, PropertyContainer):
         return ret
 
     def operations(self):
+        """
+        Returns the operations of the element.
+        """
         props = self.struct.properties
 
         if not "operations" in props: return None
@@ -221,6 +295,9 @@ class ArchElement(SofaBase, Named, PropertyContainer):
         return ret
 
     def list_values(self, prop_name, value_class):
+        """
+        A convenience method to get a list of values of a property.
+        """
         props = self.struct.properties
 
         if not prop_name in props: return None
@@ -237,6 +314,9 @@ class ArchElement(SofaBase, Named, PropertyContainer):
 
 
 class ArchElementList():
+    """
+    Represents a list of architectural elements.
+    """
     def __init__(self, elems):
         self.elems = elems
 
@@ -247,72 +327,122 @@ class ArchElementList():
         return self.elems[key]
     
     def extend(self, elems: List[ArchElement]):
+        """
+        Extends the list of elements with the given list.
+        """
         self.elems.extend(elems)
     
     def append(self, elem: ArchElement):
+        """
+        Appends an element to the list.
+        """
         self.elems.append(elem)
     
 # -----
 
 class Import: 
+    """
+    Represents an import statement.
+    """
     def __init__(self, file_name):
         self.file_name = file_name
 
 class Imports(ArchElementList): 
+    """
+    Represents a list of import statements.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class ImportStyle(Import): 
+    """
+    Represents an import statement that imports a style sheet.
+    """
     def __init__(self, file_name):
         super().__init__(file_name)
 
 class Module(ArchElement): 
+    """
+    Represents a module.
+    """
     def __init__(self, struct):
         super().__init__(struct)
 
 class Actor(ArchElement): 
+    """
+    Represents an actor.
+    """
     def __init__(self, struct):
         super().__init__(struct)
 
 class Actors(ArchElementList): 
+    """
+    Represents a list of actors.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class Component(ArchElement): 
+    """
+    Represents a component.
+    """
     def __init__(self, struct):
         super().__init__(struct)
     
     def ports(self):
+        """
+        Returns the declared ports of the component
+        """
         return self.list_values("ports", Port)
 
 class Components(ArchElementList): 
+    """
+    Represents a list of components.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class Class(ArchElement): 
+    """
+    Represents a class.
+    """
     def __init__(self, struct):
         super().__init__(struct)
 
 class Classes(ArchElementList): 
+    """
+    Represents a list of classes.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
-
 class Interface(ArchElement): 
+    """
+    Represents an interface.
+    """
     def __init__(self, struct):
         super().__init__(struct)
 
 class Interfaces(ArchElementList): 
+    """
+    Represents a list of interfaces.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class EndPoint:
+    """
+    Represents an end point of a relation.
+    """
     def __init__(self, name, port, cardinality = None):
         self.name = name
         self.port = port
         self.cardinality = cardinality
 
 class Relation(ArchElement): 
+    """
+    Represents a relation between two elements.
+    """
     def __init__(self, type, source, source_port, target, target_port, struct):
         super().__init__(struct)
         self.type = type
@@ -332,23 +462,38 @@ class Relation(ArchElement):
 
 
     def is_bidirectional(self):
+        """
+        Returns whether the relation is bidirectional.
+        """
         return (self.type == RelationType.BI_ASSOCIATION 
             or self.type == RelationType.BI_INFO_FLOW)
 
     def is_association(self):
+        """
+        Returns whether the relation is an association.
+        """
         return (self.type == RelationType.BI_ASSOCIATION 
             or self.type == RelationType.ASSOCIATION)
 
     def is_information_flow(self):
+        """
+        Returns whether the relation is an information flow
+        """
         return (self.type == RelationType.INFORMATION_FLOW 
             or self.type == RelationType.BI_INFO_FLOW)
 
 class Relations(ArchElementList): 
+    """
+    Represents a list of relations.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 
 class RelationType(Enum):
+    """
+    Represents the type of a relation.
+    """
     INHERITANCE = "inheritance"
     INFORMATION_FLOW = "information_flow"
     REALIZATION = "realization"
@@ -359,6 +504,9 @@ class RelationType(Enum):
     COMPOSITION = "composition"
 
 class StereotypeReference(Named): 
+    """
+    Represents a reference to a stereotype.
+    """
 
     def __init__(self, qname):
         profile, _, name = qname.partition(".")
@@ -373,6 +521,9 @@ class StereotypeReference(Named):
         return self.name
 
 class StereoTypeProfile(SofaBase, Named):
+    """
+    Represents the profile of a stereotype.
+    """
 
     def __init__(self, name, stereotypes: List[str]):
         super().__init__()
@@ -383,37 +534,64 @@ class StereoTypeProfile(SofaBase, Named):
         return self.name
 
 class StereotypeProfiles(ArchElementList): 
+    """
+    Represents a list of stereotype profiles.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class Primitive(ArchElement): 
+    """
+    Represents a primitive type.
+    """
     def __init__(self, struct):
         super().__init__(struct)
 
 class Primitives(ArchElementList): 
+    """
+    Represents a list of primitive types.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class Package(ArchElement): 
+    """
+    Represents a package.
+    """
     def __init__(self, struct):
         super().__init__(struct)
     
     def get_given_name(self):
+        """
+        Returns the given name of the package, which may be a qualified name.
+        """
         return self.struct.name
 
     def get_name(self):
+        """
+        Returns the name of the package without the parent package names.
+        """
         given_name = self.get_given_name()
         return given_name.split(".")[-1]
 
 class Packages(ArchElementList): 
+    """
+    Represents a list of packages.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class DiagramType(Enum):
+    """
+    Represents the type of a diagram.
+    """
     # Currently only one is supported
     COMPONENT = "component"
 
 class Diagram(Named): 
+    """
+    Represents a diagram.
+    """
 
     def __init__(self, diagram: str | KeyValue):
         self.diagram = diagram
@@ -425,37 +603,61 @@ class Diagram(Named):
             return self.diagram.key
     
     def get_type(self):
+        """
+        Returns the type of the diagram.
+        """
         if isinstance(self.diagram, str):
             return DiagramType.COMPONENT # Default
         else:
             return DiagramType(self.diagram.value.get("type", DiagramType.COMPONENT))
 
 class Diagrams(ArchElementList): 
+    """
+    Represents a list of diagrams.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class Components(ArchElementList): 
+    """
+    Represents a list of components.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class Capability(ArchElement): 
+    """
+    Represents a business or techical capability.
+    """
     def __init__(self, struct):
         super().__init__(struct)
 
 class Capabilities(ArchElementList): 
+    """
+    Represents a list of capabilities.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class Domains(ArchElementList): 
+    """
+    Represents a list of domains.
+    """
     def __init__(self, elems):
         super().__init__(elems)
 
 class Domain(ArchElement):
+    """
+    Represents a business or technical domain.
+    """
 
     def __init__(self, struct):
         super().__init__(struct)
 
     def capabilities(self):
+        """
+        Returns the capabilities of the domain.
+        """
         return self.list_values("capabilities", str) # TODO: May be CapabilityReference instead of str.
 
 # ----
@@ -463,54 +665,120 @@ class Domain(ArchElement):
 class Visitor(Protocol):
 
     @abstractmethod
-    def visit_root(self, context, sofa_root): raise NotImplementedError()
+    def visit_root(self, context, sofa_root): 
+        """
+        Visit the root of the sofa model.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_diagram(self, context, diagram): raise NotImplementedError()
+    def visit_diagram(self, context, diagram): 
+        """
+        Visit the diagram.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_package(self, context, package): raise NotImplementedError()
+    def visit_package(self, context, package): 
+        """
+        Visit the package.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_stereotype_profile(self, context, stereotype_profile): raise NotImplementedError()
+    def visit_stereotype_profile(self, context, stereotype_profile): 
+        """
+        Visit the stereotype profile. This is distinct from stereotype reference.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_primitive(self, context, primitive): raise NotImplementedError()
+    def visit_primitive(self, context, primitive): 
+        """
+        Visit primitive types.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_actor(self, context, actor): raise NotImplementedError()
+    def visit_actor(self, context, actor): 
+        """
+        Visit actor.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_component(self, context, component): raise NotImplementedError()
+    def visit_component(self, context, component): 
+        """
+        Visit component.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_relation(self, context, relation): raise NotImplementedError()
+    def visit_relation(self, context, relation): 
+        """
+        Visit relation.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_interface(self, context, interface): raise NotImplementedError()
+    def visit_interface(self, context, interface): 
+        """
+        Visit interface.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_class(self, context, clazz): raise NotImplementedError()
+    def visit_class(self, context, clazz): 
+        """
+        Visit class.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_domain(self, context, domain): raise NotImplementedError()
+    def visit_domain(self, context, domain): 
+        """
+        Visit domain.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_capability(self, context, capability): raise NotImplementedError()
+    def visit_capability(self, context, capability): 
+        """
+        Visit capability.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
-    def visit_end(self, context, sofa_root): raise NotImplementedError()
+    def visit_end(self, context, sofa_root): 
+        """
+        End of the visiting. Typically results in saving of the 
+        generated file or other cleanup activities.
+        """
+        raise NotImplementedError()
 
 # ---- 
 
-class ValidationError(Exception): ...
+class ValidationError(Exception): 
+    """
+    Represents a validation error.
+    """
+    ...
 
 class Validator:
+    """
+    Validates that the sofa model is semantically correct and complete.
+    """
 
     def validate(self, sofa_root):
-        self.validate_relations(sofa_root)
+        """
+        Validates the sofa model.
+        """
+        self._validate_relations(sofa_root)
 
-    def validate_relations(self, sofa_root):
+    def _validate_relations(self, sofa_root):
+        """
+        Validates the relations in the sofa model.
+        """
         
         if not sofa_root.relations: return
 
@@ -541,6 +809,9 @@ class Validator:
 
 # ----
 class SofaRoot:
+    """
+    Represents the root of the sofa model. Contains all the elements and provide some convenience methods.
+    """
     def __init__(self):
         self.children = None
         self.index_id = {}
@@ -564,12 +835,18 @@ class SofaRoot:
         self.capabilities = Capabilities([])
 
     def set_children(self, children):
+        """
+        Sets the children.
+        """
         self.children = children
         self._elaborate()
         self._index()
         self._link()
 
     def append_child(self, child, group_type):
+        """
+        Appends a child to the group. Triggers re-indexing.
+        """
         group = self._find_group(group_type)
         group.elems.append(child)
         self._index_child(child)
@@ -620,6 +897,9 @@ class SofaRoot:
 
     # TODO: Need a better name
     def model_elements(self):
+        """
+        Returns all the model elements.
+        """
         for child in self.children:
             for elem in child.elems:
                 yield elem
@@ -635,15 +915,27 @@ class SofaRoot:
         return None
     
     def get_by_id(self, id):
+        """
+        Returns the element by id.
+        """
         return self.index_id[id]
 
     def get_by_qname(self, qname):
+        """
+        Returns the element by fully qualified name.
+        """
         return self.index_name.get(qname, None)
         
     def validate(self):
+        """
+        Validates the model.
+        """
         Validator().validate(self)
 
     def visit(self, context, visitor: Visitor):
+        """
+        Visits all the elements in the model.
+        """
 
         visitor.visit_root(context, self)
 

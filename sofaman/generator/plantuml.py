@@ -4,13 +4,17 @@ from sofaman.generator.generator import FileContext, Visitor
 from sofaman.ir.model import RelationType, Attribute, Port
 
 class PumlContext(FileContext):
-
+    """
+    PlantUML context with content stored in a file.
+    """
     def __init__(self, out_file, desc_as_notes = False):
         super().__init__(out_file)
         self.desc_as_notes = desc_as_notes
 
 class PumlVisitor(Visitor):
-
+    """
+    PlantUML visitor that generates PlantUML code.
+    """
     INDENT = " " * 4
 
     # In general the rendering puts newline in at first instead of later,

@@ -7,6 +7,11 @@ from sofaman.ir.model import (SofaRoot, KeyValue, Struct,
 from lark import Tree, Transformer
 
 class SofaStructTransformer(Transformer):
+    """
+    This class extends Transformer and implements the transformation from the Lark AST to the Sofa IR.
+    This transformer focuses on the `struct` elements.
+    The trasnformation is done by implementing the methods that correspond to the rules in the grammar.
+    """
     
     def STRING(self, args):
         return self._as_string(args)
@@ -73,6 +78,9 @@ class SofaStructTransformer(Transformer):
         return args.value
 
 class SofaTransformer(SofaStructTransformer):
+    """
+    This class implements transformation of the model elements.
+    """
 
     # This class is NOT thread-safe, as its
     # members are mutated
@@ -214,11 +222,18 @@ class SofaTransformer(SofaStructTransformer):
         return self.sofa_root
 
 class SofaIR:
+    """
+    This class is used to build the intermediate representation of the sofa model, which is 
+    used by the generator to generate the final output.
+    """
 
     def __init__(self):
         self.parser = SofaParser()
     
     def build(self, content: str) -> SofaRoot:
+        """
+        Build the intermediate representation of the sofa model.
+        """
         ast = self.parser.parse(content)
         return self._build(ast)
     
