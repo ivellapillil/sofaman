@@ -1,4 +1,7 @@
 
+"""
+Module that generates PlantUML files from the Sofa model.
+"""
 from textwrap import dedent
 from sofaman.generator.generator import FileContext, Visitor
 from sofaman.ir.model import RelationType, Attribute, Port

@@ -12,9 +12,9 @@ author = 'Indukumar Vellapillil-Hari'
 release = '0.1'
 
 extensions = [
+    'myst_parser',
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.autosummary'
 ]
 
 templates_path = ['_templates']

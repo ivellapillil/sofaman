@@ -1,3 +1,6 @@
+"""
+Supports parsing of Sofa files into an abstract syntax tree (AST). It uses Lark to parse the content of a Sofa file.
+"""
 import pathlib
 
 from lark import Lark, Transformer

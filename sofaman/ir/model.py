@@ -1,3 +1,8 @@
+"""
+This module defines the intermediate representation (IR) of the sofa model. 
+The IR is used to represent the parsed sofa model in a structured way, which is then used by the generator 
+to generate the final output in the desired format (e.g., PlantUML, XMI).
+"""
 from enum import Enum
 from typing import Protocol, List, runtime_checkable, Tuple
 from abc import abstractmethod

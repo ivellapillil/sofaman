@@ -10,7 +10,7 @@ The project uses [Pixi](https://pixi.sh/latest/) for project management.
 
 The following shows an example model using the SofaMan modeling language.
 
-```sofa
+```
 #
 # Sample sofa model.
 #

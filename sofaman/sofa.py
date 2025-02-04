@@ -1,3 +1,6 @@
+"""
+Main entry point to generate the final output from the input sofa model.
+"""
 from sofaman.parser.sofa_parser import SofaParser
 from sofaman.ir.ir import SofaIR
 from sofaman.generator.generator import Generator

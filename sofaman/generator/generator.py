@@ -1,3 +1,6 @@
+"""
+This module contains basic support for generating output from the sofa model using format specific visitors.
+"""
 from sofaman.ir.model import SofaRoot, Visitor
 from typing import Protocol
 import pathlib

@@ -58,6 +58,7 @@ coverage = "pytest --cov=sofaman tests"
 [tool.pixi.feature.doc.dependencies]
 sphinx = "*"
 sphinx-book-theme = "*"
+myst-parser = "*"
 
 [tool.pixi.feature.doc.tasks]
 doc = "sphinx-build -M html docs/source docs/build --fail-on-warning"

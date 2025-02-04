@@ -1,3 +1,7 @@
+"""
+CLI for generating architectural diagram/model files from a given Sofa model file.
+"""
+
 import sys
 
 import click

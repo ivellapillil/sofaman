@@ -1,4 +1,6 @@
-
+"""
+Module that generates XMI code from the Sofa model.
+"""
 import uuid
 from sofaman.generator.generator import FileContext, Visitor
 import lxml.etree as etree

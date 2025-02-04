@@ -1,3 +1,6 @@
+"""
+This is a mostly internal module that is used to build the intermediate representation from the AST.
+"""
 from sofaman.parser.sofa_parser import SofaParser
 from sofaman.ir.model import (SofaRoot, KeyValue, Struct, 
                     Capability, Domain, Interface, Component, 
