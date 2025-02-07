@@ -23,15 +23,3 @@ jobs:
       - name: Test
         run: pixi run test
 
-      - name: Publish
-        with: 
-          HATCH_INDEX_USER: __token__
-          HATCH_INDEX_AUTH: ${{ secrets.SOFAMAN_TESTPYPI }}
-        run: pixi run publish 
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: myapp
-          path: mywebapp/**
-          if-no-files-found: error
