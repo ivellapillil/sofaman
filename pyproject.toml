@@ -1,10 +1,9 @@
 [project]
 name = "sofaman"
-version = "0.1.0"
 authors = [
   { name="Indukumar Vellapillil-Hari" }
 ]
-description = "Model your architecture in an easy to understand language and generate XMI (UML2) and PlantUML outputs."
+description = "Model your architecture in an easy to understand language inspired by Yaml, and generate XMI (UML2) and PlantUML outputs."
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -13,6 +12,10 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+version = "0.1.03"
+#dynamic = [
+# "version",
+#]
 dependencies = [
     "lark >=1.2",
     "session-info >=1.0.0,<2",
@@ -25,8 +28,11 @@ dependencies = [
 Homepage = "https://github.com/ivellapillil/sofaman"
 Issues = "https://github.com/ivellapillil/sofaman/issues"
 
+[project.scripts]
+sofaman = "sofaman:sofamangen"
+
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [tool.pixi.project]
@@ -68,4 +74,7 @@ hatch = "*"
 
 [tool.pixi.feature.build.tasks]
 build = "hatch build"
+publish = "hatch publish -r https://test.pypi.org/legacy/"
 
+[tool.hatch.version]
+source = "vcs"

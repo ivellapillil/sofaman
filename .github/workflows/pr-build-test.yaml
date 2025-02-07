@@ -1,0 +1,37 @@
+name: PR - Build / Test
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.8.0
+        with:
+          pixi-version: v0.40.3
+          cache: true
+
+      - name: Test
+        run: pixi run test
+
+      - name: Publish
+        with: 
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.SOFAMAN_TESTPYPI }}
+        run: pixi run publish 
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: myapp
+          path: mywebapp/**
+          if-no-files-found: error
