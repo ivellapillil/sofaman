@@ -1,7 +1,7 @@
 name: PR - Build / Test
 
 on:
-  pull_request:
+  push:
     branches:
       - main
   workflow_dispatch:
@@ -23,3 +23,17 @@ jobs:
       - name: Test
         run: pixi run test
 
+      - name: Docs
+        run: pixi run doc
+
+      - name: "Coverage report artifact"
+        uses: actions/upload-artifact@v3
+        with: 
+          name: code-coverage-report
+          path: test-results/coverage/html
+        if: ${{ always() }}
+      - name: "Documentation artifact"
+        uses: actions/upload-artifact@v3
+        with: 
+          name: docs
+          path: docs/build/html

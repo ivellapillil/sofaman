@@ -2936,14 +2936,14 @@ packages:
   timestamp: 1637143137377
 - pypi: .
   name: sofaman
-  version: 0.1.3
-  sha256: 69759c53e0e4e04e1e58e298213ada204e8f499ab79c7a10c83bff1e150a61cb
+  version: 0.1.dev70+gfe8b7ca.d20250207
+  sha256: f9bf3f33ade95aaad8dd8f24c29c512f1e6271d04b84555a63b7b48a95e8f567
   requires_dist:
-  - lark>=1.2
-  - session-info>=1.0.0,<2
-  - jsonpickle
-  - lxml
   - click
+  - jsonpickle
+  - lark>=1.2
+  - lxml
+  - session-info>=1.0.0,<2
   requires_python: '>=3.12'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/noarch/soupsieve-2.5-pyhd8ed1ab_1.conda

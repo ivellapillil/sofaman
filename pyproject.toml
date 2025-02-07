@@ -12,10 +12,9 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
-version = "0.1.03"
-#dynamic = [
-# "version",
-#]
+dynamic = [
+ "version",
+]
 dependencies = [
     "lark >=1.2",
     "session-info >=1.0.0,<2",
@@ -57,7 +56,7 @@ pytest-cov = "*"
 pytest-mock = "*"
 
 [tool.pixi.feature.test.tasks]
-test = "pytest -s"
+test = "pytest --doctest-modules --junitxml=test-results/test-results.xml --cov=sofaman tests --cov-report=xml:test-results/coverage/coverage.xml --cov-report=html:test-results/coverage/html"
 test-debug = "pytest --trace"
 coverage = "pytest --cov=sofaman tests"
 
@@ -73,7 +72,7 @@ doc = "sphinx-build -M html docs/source docs/build --fail-on-warning"
 hatch = "*"
 
 [tool.pixi.feature.build.tasks]
-build = "hatch build"
+build = "hatch clean && hatch build"
 publish = "hatch publish -r https://test.pypi.org/legacy/"
 
 [tool.hatch.version]
