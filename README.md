@@ -1,5 +1,7 @@
 # SofaMan
 
+![Sofaman build status on GitHub Actions](https://github.com/ivellapillil/sofaman/actions/workflows/push-build-test.yaml/badge.svg?branch=main&event=push)
+
 SofaMan is an easy to use software architecture modeling language inspired by YAML. 
 It is designed to be easy to read and write, and to be easily converted to other modeling language formats.
 At present there are two languages supported, XMI (UML2) and PlantUML.
