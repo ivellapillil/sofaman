@@ -109,3 +109,4 @@ pixi run coverage
 pixi run doc
 ```
 
+The latest documentation can be found at: https://ruhati.net/sofaman/
