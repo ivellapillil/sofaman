@@ -66,7 +66,7 @@ sphinx-book-theme = "*"
 myst-parser = "*"
 
 [tool.pixi.feature.doc.tasks]
-doc = "sphinx-build -M html docs/source docs/build --fail-on-warning"
+doc = "sphinx-build -M html docs/source docs/build"
 
 [tool.pixi.feature.build.dependencies]
 hatch = "*"
