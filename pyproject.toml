@@ -28,7 +28,7 @@ Homepage = "https://github.com/ivellapillil/sofaman"
 Issues = "https://github.com/ivellapillil/sofaman/issues"
 
 [project.scripts]
-sofaman = "sofaman:sofamangen"
+sofaman = "sofaman.sofamangen:generate"
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]

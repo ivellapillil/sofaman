@@ -2936,8 +2936,8 @@ packages:
   timestamp: 1637143137377
 - pypi: .
   name: sofaman
-  version: 0.1.dev72+g684e7b4.d20250207
-  sha256: c900c25ea9f5a27f6e50b45c4e793fdcfd7f0229f7e36cb6ed867b64dbebdbdb
+  version: 0.1.6.dev1+g1511225.d20250208
+  sha256: 67f6261fcf5f0dab5c8fefeab658aa1b3386bdbf604b78c7cd89235a40fc284c
   requires_dist:
   - click
   - jsonpickle
