@@ -49,7 +49,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://test.pypi.org//project/sofaman/${{ github.event.release.name }}
+      url: https://test.pypi.org/project/sofaman/${{ github.event.release.name }}
       #url: https://pypi.org/project/sofaman/${{ github.event.release.name }}
 
     steps:
