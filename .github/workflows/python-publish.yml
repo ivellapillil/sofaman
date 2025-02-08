@@ -49,8 +49,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://test.pypi.org/roject/sofaman/${{ github.event.release.name }}
-      #url: https://pypi.org/project/sofaman/${{ github.event.release.name }}
+      url: https://pypi.org/project/sofaman/${{ github.event.release.name }}
 
     steps:
       - name: Retrieve release distributions
@@ -63,4 +62,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
-          repository-url: https://test.pypi.org/legacy/
+          repository-url: https://pypi.org/legacy/
