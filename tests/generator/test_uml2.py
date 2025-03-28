@@ -1,12 +1,11 @@
 import pytest
-from textwrap import dedent
 import lxml.etree as etree
 
 from sofaman.generator.generator import Generator
-from sofaman.generator.uml2 import NS_MAP, NS_UML, XmiContext, XmiFlavor, XmiVisitor, XMI, UML
+from sofaman.generator.uml2 import NS_MAP, XmiVisitor, XMI, UML
+from sofaman.ir.model import IrContext
 import sofaman.parser.sofa_parser as parser
-from sofaman.ir.ir import SofaIR, SofaRoot, SofaTransformer
-from sofaman.ir.model import RelationType, Visibility, DiagramType
+from sofaman.ir.ir import SofaIR
 import tests.test_cases.test_variations as test_variations
 
 class _Setup:
@@ -39,7 +38,7 @@ class TestUml2Generator:
     
     def _generate(self, setup : _Setup, sofa_lang_fn):
         tree = setup.sofa_parser.parse(sofa_lang_fn())
-        sofa_root = setup.sofa_ir._build(tree)
+        sofa_root = setup.sofa_ir._build(IrContext(setup.sofa_ir), tree)
         setup.sofa_root = sofa_root
         context = _XMLContext()
         visitor = XmiVisitor()

@@ -1,9 +1,10 @@
 import pytest
 from textwrap import dedent
 
+from sofaman.generator.generator import BufferContext, FileContext
 import sofaman.parser.sofa_parser as parser
-from sofaman.ir.ir import SofaIR, SofaRoot, SofaTransformer
-from sofaman.ir.model import RelationType, Visibility, DiagramType
+from sofaman.ir.ir import SofaIR
+from sofaman.ir.model import RelationType, Visibility, DiagramType, IrContext
 import tests.test_cases.test_variations as test_variations
 
 class _Setup:
@@ -21,7 +22,7 @@ class TestSofaIR:
     
     def _get_root(self, setup : _Setup, sofa_lang_fn):
         tree = setup.sofa_parser.parse(sofa_lang_fn())
-        return setup.sofa_ir._build(tree)
+        return setup.sofa_ir._build(BufferContext(), tree)
 
     def test_ir_package(self, setup):
         sofa_root = self._get_root(setup, test_variations.package_variations)
@@ -169,4 +170,18 @@ class TestSofaIR:
         assert capabilities.elems[0].get_name() == "A"
         assert capabilities.elems[1].get_name() == "B"
 
-        assert capabilities.elems[0].get_name() == "A"
+
+    def _get_root_from_file(self, setup : _Setup):
+        input_file = "tests/test_cases/sofa_imports/main.sofa"
+        with open(input_file) as f:
+            return setup.sofa_ir.build(IrContext(setup.sofa_ir, input_file), f.read())
+
+    def test_import(self, setup):
+        sofa_root = self._get_root_from_file(setup)
+        classes = sofa_root.classes
+        assert classes.elems[0].get_name() == "B"
+        assert classes.elems[1].get_name() == "A"
+        assert sofa_root.interfaces.elems[0].get_name() == "AB"
+        assert sofa_root.relations.elems[0].source.name == "A"
+        assert sofa_root.relations.elems[0].target.name == "B"
+        assert sofa_root.relations.elems[0].type == RelationType.INFORMATION_FLOW

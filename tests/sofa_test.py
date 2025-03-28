@@ -10,11 +10,10 @@ def sofa():
     return Sofa()
 
 def test_build(sofa):
-    with open("tests/test_cases/full_all.sofa") as f:
-        content = f.read()
+    input_file = "tests/test_cases/full_all.sofa"
     visitor = Mock(Visitor)
     
-    sofa.build(content, BufferContext(), visitor)
+    sofa.build(input_file, BufferContext(), visitor)
     
     visitor.visit_root.assert_called()
     visitor.visit_diagram.assert_called()

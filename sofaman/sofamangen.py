@@ -33,20 +33,19 @@ def _build(input, output, type):
     """
     Builds the architectural diagram/model files from a given Sofa model file.
     """
-    with open(input) as sa:
-        context = None
-        visitor = None
-        match type:
-            case "xmi":
-                context = XmiContext(output, mode=XmiFlavor.SPARX_EA)
-                visitor = XmiVisitor()
-            case "puml":
-                context = PumlContext(output)
-                visitor = PumlVisitor()
-            case _:
-                raise SofaException(f"Unknown type {type}")
+    context = None
+    visitor = None
+    match type:
+        case "xmi":
+            context = XmiContext(output, mode=XmiFlavor.SPARX_EA)
+            visitor = XmiVisitor()
+        case "puml":
+            context = PumlContext(output)
+            visitor = PumlVisitor()
+        case _:
+            raise SofaException(f"Unknown type {type}")
 
-        Sofa().build(sa.read(), context, visitor)
+    Sofa().build(input, context, visitor)
 
 class SofaException(Exception): 
     """

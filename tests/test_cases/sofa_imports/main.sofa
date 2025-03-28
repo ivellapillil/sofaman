@@ -1,0 +1,7 @@
+import "first.sofa"
+
+interface AB
+
+# Check if the imports actually import the entities.
+relation A flow B
+

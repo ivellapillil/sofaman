@@ -110,3 +110,11 @@ pixi run doc
 ```
 
 The latest documentation can be found at: https://ruhati.net/sofaman/
+
+## Using without Pixi
+
+```
+pip install sofaman
+python -m sofaman.sofamangen --help
+```
+

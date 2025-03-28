@@ -2,10 +2,10 @@ import pytest
 from textwrap import dedent
 
 from sofaman.generator.generator import BufferContext, Generator
-from sofaman.generator.plantuml import PumlVisitor, PumlContext
+from sofaman.generator.plantuml import PumlVisitor
 import sofaman.parser.sofa_parser as parser
-from sofaman.ir.ir import SofaIR, SofaRoot, SofaTransformer
-from sofaman.ir.model import RelationType, Visibility, DiagramType
+from sofaman.ir.ir import SofaIR
+from sofaman.ir.model import IrContext
 import tests.test_cases.test_variations as test_variations
 
 class _Setup:
@@ -32,7 +32,7 @@ class TestPumlGenerator:
     
     def _generate(self, setup : _Setup, sofa_lang_fn):
         tree = setup.sofa_parser.parse(sofa_lang_fn())
-        sofa_root = setup.sofa_ir._build(tree)
+        sofa_root = setup.sofa_ir._build(IrContext(setup.sofa_ir), tree)
         setup.sofa_root = sofa_root
         context = _PumlContext()
         visitor = PumlVisitor()

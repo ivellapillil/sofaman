@@ -1,0 +1,5 @@
+class Finma:
+    name: "Swiss Regulator"
+
+interface RegulatoryAuthority
+

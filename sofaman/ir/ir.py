@@ -2,7 +2,7 @@
 This is a mostly internal module that is used to build the intermediate representation from the AST.
 """
 from sofaman.parser.sofa_parser import SofaParser
-from sofaman.ir.model import (SofaRoot, KeyValue, Struct, 
+from sofaman.ir.model import (IrContext, SofaRoot, KeyValue, Struct, 
                     Capability, Domain, Interface, Component, 
                     Class, Import, ImportStyle, Diagram, Actor, 
                     Relation, RelationType, Port, Package,
@@ -88,11 +88,12 @@ class SofaTransformer(SofaStructTransformer):
     # This class is NOT thread-safe, as its
     # members are mutated
 
-    def __init__(self, visit_tokens = True):
+    def __init__(self, context, visit_tokens = True):
         super().__init__(visit_tokens)
         # Consolidate aggregations since Lark 
         # processes in a streaming manner
         self.sofa_root = SofaRoot()
+        self.context = context
 
     def struct_body(self, args):
         return args[0]
@@ -170,7 +171,9 @@ class SofaTransformer(SofaStructTransformer):
             if len(imp) > 1:
                 imps.append(ImportStyle(imp[1]))
             else:
-                imps.append(Import(imp[0]))
+                import_ir = Import(imp[0])
+                imps.append(import_ir)
+                import_ir.resolve(self.context, self.sofa_root)
         return self._extend_arch_elem_list(self.sofa_root.imports, imps)
 
     def diagrams(self, args):
@@ -221,7 +224,7 @@ class SofaTransformer(SofaStructTransformer):
         return self._extend_arch_elem_list(self.sofa_root.relations, args)
     
     def sofa(self, args):
-        self.sofa_root.set_children(args)
+        self.sofa_root.add_children(args)
         return self.sofa_root
 
 class SofaIR:
@@ -233,12 +236,12 @@ class SofaIR:
     def __init__(self):
         self.parser = SofaParser()
     
-    def build(self, content: str) -> SofaRoot:
+    def build(self, context: IrContext, content: str) -> SofaRoot:
         """
         Build the intermediate representation of the sofa model.
         """
         ast = self.parser.parse(content)
-        return self._build(ast)
+        return self._build(context, ast)
     
-    def _build(self, root: Tree) -> SofaRoot: 
-        return SofaTransformer().transform(root)
+    def _build(self, context: IrContext, root: Tree) -> SofaRoot: 
+        return SofaTransformer(context).transform(root)

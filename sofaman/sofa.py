@@ -1,6 +1,7 @@
 """
 Main entry point to generate the final output from the input sofa model.
 """
+from sofaman.ir.model import IrContext
 from sofaman.parser.sofa_parser import SofaParser
 from sofaman.ir.ir import SofaIR
 from sofaman.generator.generator import Generator
@@ -19,11 +20,13 @@ class Sofa:
     def __init__(self):
         pass
 
-    def build(self, content: str, context, visitor):
+    def build(self, input_file, context, visitor):
         """
-        Build the final output from the input sofa model.
+        Build the final output from the input sofa model file.
         """
-        return self._generate(_Cached.ir.build(content), context, visitor)
+        with open(input_file) as f:
+            content = f.read()
+            return self._generate(_Cached.ir.build(IrContext(_Cached.ir, input_file), content), context, visitor)
     
     def _generate(self, sofa_root, context, visitor):
         """

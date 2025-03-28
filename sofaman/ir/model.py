@@ -4,9 +4,76 @@ The IR is used to represent the parsed sofa model in a structured way, which is 
 to generate the final output in the desired format (e.g., PlantUML, XMI).
 """
 from enum import Enum
+from pathlib import Path
 from typing import Protocol, List, runtime_checkable, Tuple
 from abc import abstractmethod
 import uuid
+
+class IrContext:
+    """
+    Context used while building the IR. It keeps track of the imported files and
+    ensures that cyclic imports are avoided.
+    """
+
+    def __init__(self, ir, root_file = None):
+        self.imports = []
+        self.import_context = []
+        self.ir = ir
+        if root_file:
+            resolved_file_name = self.resolve_file(root_file)
+            self.imports.append(resolved_file_name)
+            self.import_context.append(resolved_file_name)
+    
+    def start_import(self, file_name):
+        """
+        Start of importing a file.
+        """
+        self.imports.append(file_name)
+        # Import context to track import nesting
+        self.import_context.append(file_name)
+    
+    def exists_import(self, file_name):
+        """
+        Checks if the given file name is already imported in the context.
+        """
+        return file_name in self.imports
+
+    def end_import(self):
+        """
+        The end of importing a file.
+        """
+        # Import is finished we can remove it from the context
+        self.import_context.pop()
+    
+    def resolve_file(self, file_name) -> str:
+        """
+        Resolves the given file name to a valid path.
+        """
+        path = Path(file_name)
+        if path.is_absolute():
+            return str(path.resolve())
+        
+        # Relative path. We resolve it relative to parent file
+        if len(self.import_context) > 0:
+            parent_file = self.import_context[-1]
+            parent_path = Path(parent_file)
+            return str(parent_path.parent.joinpath(path).resolve())
+        
+        return str(Path(file_name).resolve())
+
+
+    def build(self, file_name):
+        """
+        Builds the IR from the given file name.
+        """
+        resolved_file_name = self.resolve_file(file_name)
+        if not self.exists_import(resolved_file_name):
+            with open(resolved_file_name) as f:
+                content = f.read()
+                self.start_import(resolved_file_name)
+                sofa_root = self.ir.build(self, content)
+                self.end_import()
+                return sofa_root
 
 class SofaBase: 
     """
@@ -351,6 +418,14 @@ class Import:
     """
     def __init__(self, file_name):
         self.file_name = file_name
+    
+    def resolve(self, context: IrContext, sofa_root):
+        """
+        Resolves the import and returns SofaRoot.
+        """
+        sub_sofa_root = context.build(self.file_name)
+        if sub_sofa_root:
+            sofa_root.merge(sub_sofa_root)
 
 class Imports(ArchElementList): 
     """
@@ -818,7 +893,7 @@ class SofaRoot:
     Represents the root of the sofa model. Contains all the elements and provide some convenience methods.
     """
     def __init__(self):
-        self.children = None
+        self.children = []
         self.index_id = {}
         self.index_name = {}
 
@@ -839,11 +914,11 @@ class SofaRoot:
         self.domains = Domains([])
         self.capabilities = Capabilities([])
 
-    def set_children(self, children):
+    def add_children(self, children):
         """
         Sets the children.
         """
-        self.children = children
+        self.children.extend(children)
         self._elaborate()
         self._index()
         self._link()
@@ -855,6 +930,30 @@ class SofaRoot:
         group = self._find_group(group_type)
         group.elems.append(child)
         self._index_child(child)
+    
+    def merge(self, other):
+        """
+        Merges the other sofa root into this one.
+        """
+        if not isinstance(other, SofaRoot):
+            raise AssertionError("Only SofaRoot types can be merged")
+
+        # TODO: It is a bit of a mess to having to 
+        # duplicate the children in another list. Revisit.
+        self.imports.extend(other.imports)
+        self.packages.extend(other.packages)
+        self.diagrams.extend(other.diagrams)
+        self.stereotype_profiles.extend(other.stereotype_profiles)
+        self.primitives.extend(other.primitives)
+        self.actors.extend(other.actors)
+        self.components.extend(other.components)
+        self.relations.extend(other.relations)
+        self.interfaces.extend(other.interfaces)
+        self.classes.extend(other.classes)
+        self.domains.extend(other.domains)
+        self.capabilities.extend(other.capabilities)
+
+        self.add_children(other.children)
 
     def _index_child(self, child):
         if hasattr(child, 'id'):

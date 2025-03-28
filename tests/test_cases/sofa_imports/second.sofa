@@ -1,0 +1,4 @@
+# Handle cyclic imports
+import "main.sofa"
+
+class B
