@@ -52,3 +52,15 @@ def test_export_id(tmp_path):
     assert result.exit_code == 0
     assert output_file.exists()
 
+def test_ids_file(tmp_path):
+    runner = CliRunner()
+    input_file = tmp_path / "input.xmi"
+    output_file = tmp_path / "output.json"
+    ids_file = tmp_path / "ids.json"
+    input_file.write_text("class A")
+    ids_file.write_text('{"A": "1"}')
+    result = runner.invoke(generate, [str(input_file), str(output_file), '--ids_file', str(ids_file)])
+
+    assert result.exit_code == 0
+    assert output_file.exists()
+
