@@ -1,0 +1,158 @@
+<xmi:XMI xmlns="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1" xmlns:regulatory="Regulatory" xmlns:security="Security">
+  <xmi:Documentation xmi:exporter="Enterprise Architect" xmi:exporterVersion="6.5" xmi:exporterId="1"/>
+  <uml:Model xmi:type="uml:Model">
+    <packagedElement xmi:type="uml:Package" xmi:id="17ff2979-398e-4b16-a62a-4a52387b3b01" name="full_all" isAbstract="false" visibility="private">
+      <packagedElement xmi:type="uml:Package" xmi:id="70547588-c614-4608-9e34-b0d6d079e5a8" name="Retail" isAbstract="false" visibility="private">
+        <packagedElement xmi:type="uml:Package" xmi:id="9b2c4580-23f8-4c83-9db8-e8bda07f0538" name="CRM" isAbstract="false" visibility="public">
+          <packagedElement xmi:type="uml:Component" xmi:id="6ff575dd-e7ef-4df0-9956-f502a40835de" name="CustomerDB" isAbstract="false" visibility="private">
+            <ownedComment xmi:type="uml:Comment" xmi:id="1f93c6aa-b90d-40a1-a4eb-194f8c46d88a" body="Holds customer data">
+              <annotatedElement xmi:idref="6ff575dd-e7ef-4df0-9956-f502a40835de"/>
+            </ownedComment>
+          </packagedElement>
+        </packagedElement>
+        <packagedElement xmi:type="uml:Component" xmi:id="1408a4d8-e474-45ea-9c30-7140ad6ae78b" name="CustomerSearch" isAbstract="false" visibility="private">
+          <ownedAttribute xmi:id="e2f3b3d5-468f-4ef8-b21d-c386f1253306" association="3cf9b302-f67a-4b36-ab2c-8df1a44645d7" aggregation="none">
+            <type xmi:idref="a07ef8c7-d17f-4135-b6ff-73e3524df61f"/>
+          </ownedAttribute>
+        </packagedElement>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Actor" xmi:id="c9e71611-aa5f-413a-be89-18a3a38b7488" name="Client" isAbstract="false" visibility="private"/>
+      <packagedElement xmi:type="uml:Actor" xmi:id="5ef16e91-339c-49e2-9b99-f324df0db2fa" name="RelationshipManager" isAbstract="false" visibility="private"/>
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="052d251e-aa64-423c-84b9-99bf73146e1b" name="String" isAbstract="false" visibility="private"/>
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="68b31479-89d6-4537-8f59-6ecae5317c65" name="Boolean" isAbstract="false" visibility="private"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="6bf4fc19-7234-4bc0-95cb-40cd0d65c524" name="RegulatoryAuthority" isAbstract="true" visibility="private"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="9fa622a6-d44f-409a-b09d-a6712fde2787" name="Product" isAbstract="true" visibility="private">
+        <ownedAttribute xmi:id="e86a7512-d825-4237-b831-d13f9dfa54c3" name="name" value="" xmi:type="uml:Property">
+          <lowerValue xmi:type="uml:LiteralInteger" value="1" xmi:id="3f19bc77-271f-434e-8414-67bfd0492fd0"/>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="-1" xmi:id="7917ca6d-6f45-4ab5-9722-bc0253429508"/>
+          <type xmi:idref="052d251e-aa64-423c-84b9-99bf73146e1b"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="acde6072-e2b9-4718-b576-ab390a8a94e4" name="is_active" value="" xmi:type="uml:Property">
+          <lowerValue xmi:type="uml:LiteralInteger" value="0" xmi:id="1c75f0ee-f05c-43ab-8897-7398b6be8b42"/>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1" xmi:id="66e020db-c467-4d32-808c-cffb67e301d4"/>
+          <type xmi:idref="68b31479-89d6-4537-8f59-6ecae5317c65"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="305e3869-8c0f-41c1-b474-18781698a60e" name="Finma" isAbstract="false" visibility="private"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="755217c7-da96-4d0b-b4a3-072cd5be09c9" name="Person" isAbstract="false" visibility="private">
+        <ownedComment xmi:type="uml:Comment" xmi:id="f41930c7-70bf-44b0-a48b-7bf6cf4683d3" body="Represents a person, who could be either a customer or a relationship manager">
+          <annotatedElement xmi:idref="755217c7-da96-4d0b-b4a3-072cd5be09c9"/>
+        </ownedComment>
+        <ownedLiteral name="CUSTOMER" xmi:id="755217c7-da96-4d0b-b4a3-072cd5be09c9">
+          <ownedComment xmi:type="uml:Comment" xmi:id="2774ca0e-cd92-41e8-a7d5-cbf8a4917d7d" body="Represents a person, who could be either a customer or a relationship manager">
+            <annotatedElement xmi:idref="755217c7-da96-4d0b-b4a3-072cd5be09c9"/>
+          </ownedComment>
+        </ownedLiteral>
+        <ownedLiteral name="LEAD" xmi:id="755217c7-da96-4d0b-b4a3-072cd5be09c9">
+          <ownedComment xmi:type="uml:Comment" xmi:id="ac647cbc-1ac3-4bb5-a19b-86ff773a9f81" body="Represents a person, who could be either a customer or a relationship manager">
+            <annotatedElement xmi:idref="755217c7-da96-4d0b-b4a3-072cd5be09c9"/>
+          </ownedComment>
+          <ownedAttribute xmi:id="19394aa7-6add-4481-abe4-b037b94cc049" association="aaf295ea-869b-45e7-8bae-93f3207c1752" aggregation="shared">
+            <type xmi:idref="9fa622a6-d44f-409a-b09d-a6712fde2787"/>
+            <lowerValue xmi:type="uml:LiteralInteger" value="0" xmi:id="1631dab2-08e0-4d96-9b37-16d911782708"/>
+            <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1" xmi:id="d5921e1c-f2f5-499b-98bc-b32e67078a9e"/>
+          </ownedAttribute>
+          <ownedAttribute xmi:id="b0041505-35e4-43d3-9c03-e23dc578389a" association="70e0cc0f-7e68-4fdd-a700-cae7e41b4504" aggregation="composite">
+            <type xmi:idref="aa3c5567-aeda-45e0-b78a-3cc89455b757"/>
+          </ownedAttribute>
+        </ownedLiteral>
+        <ownedAttribute xmi:id="06d0affe-cb7e-4325-aaed-1e40f672fff5" name="name" value="" xmi:type="uml:Property">
+          <lowerValue xmi:type="uml:LiteralInteger" value="1" xmi:id="4d7e63b2-0568-4f38-9518-c78b431755a5"/>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="-1" xmi:id="adf6ad31-7a0e-452b-a059-d4656742d74c"/>
+          <type xmi:idref="052d251e-aa64-423c-84b9-99bf73146e1b"/>
+          <ownedComment xmi:type="uml:Comment" xmi:id="0d80f4da-4eff-43d1-8e2f-3a3fbf1401a4" body="Name of the person.">
+            <annotatedElement xmi:idref="06d0affe-cb7e-4325-aaed-1e40f672fff5"/>
+          </ownedComment>
+        </ownedAttribute>
+        <ownedOperation xmi:id="9c8f7f4a-a0e2-4824-99c5-7ffae77a54b8" name="fullName" visibility="public">
+          <ownedParameter xmi:id="4aebb2a5-cca5-4707-9ff6-8cd16b62c103" name="firstName" direction="in" type="String"/>
+          <ownedParameter xmi:id="e1e2c3c3-a548-41de-b5ae-90821ad80621" name="lastName" direction="in" type="String"/>
+          <ownedParameter xmi:id="c2bf1a76-a7ab-4e2d-81c6-363262ee6a72" name="fullName" direction="return" type="String"/>
+          <ownedComment xmi:type="uml:Comment" xmi:id="d35bf925-3a13-4405-882f-a5ee441ed836" body="Full name of the person">
+            <annotatedElement xmi:idref="9c8f7f4a-a0e2-4824-99c5-7ffae77a54b8"/>
+          </ownedComment>
+        </ownedOperation>
+        <ownedOperation xmi:id="7732a5bd-eb66-4e59-9f48-dc0fb0769efd" name="address" visibility="private">
+          <ownedParameter xmi:id="92937582-a83c-499b-99cd-2e50f43f8e07" name="street" direction="in"/>
+          <ownedParameter xmi:id="d439fdaa-47d0-45ab-8ede-c2171006e0ea" name="city" direction="in"/>
+          <ownedParameter xmi:id="eae5ac81-fce8-4b95-8ed2-7988e61d6399" name="country" direction="in"/>
+        </ownedOperation>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="e0b496e9-0d9b-4f35-b5a7-f1d3de470341" name="Account" isAbstract="false" visibility="private">
+        <ownedAttribute xmi:id="643aa76f-ba88-4257-87b2-f9b7c99d7233" association="99035be9-7c1c-424b-8651-07a2b0706f44" aggregation="none">
+          <type xmi:idref="8c504d5f-2f72-4b21-b6a9-b2cb250f11f7"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="1ddba7be-91fa-4b81-a6f1-0a0c90ee8b63" name="CurrentAccount" isAbstract="false" visibility="private">
+        <generalization xmi:type="uml:Generalization" name="CurrentAccount_INHERITANCE_Account" general="e0b496e9-0d9b-4f35-b5a7-f1d3de470341" isSubstitutable="true" xmi:id="c3218f17-9f65-4907-8e77-58fef53726f0"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="b4999d9f-bda3-453f-b145-8a918c061d1e" name="SavingsAccount" isAbstract="false" visibility="private">
+        <generalization xmi:type="uml:Generalization" name="SavingsAccount_INHERITANCE_Account" general="e0b496e9-0d9b-4f35-b5a7-f1d3de470341" isSubstitutable="true" xmi:id="4e81c641-6612-4771-a674-1062ae1ed3b0"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="aa3c5567-aeda-45e0-b78a-3cc89455b757" name="PowerOfAttorney" isAbstract="false" visibility="private">
+        <ownedAttribute xmi:id="b4ff8c0f-2bec-412d-a252-40f950c9c03c" association="f6294806-7d16-49d6-b1c9-72fa9889ab48" aggregation="none">
+          <type xmi:idref="755217c7-da96-4d0b-b4a3-072cd5be09c9"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="8c504d5f-2f72-4b21-b6a9-b2cb250f11f7" name="PaymentChannel" isAbstract="false" visibility="private">
+        <ownedAttribute xmi:id="8463c4f8-5c29-4ee8-a07f-87d3bca0a786" association="99035be9-7c1c-424b-8651-07a2b0706f44">
+          <type xmi:idref="e0b496e9-0d9b-4f35-b5a7-f1d3de470341"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Component" xmi:id="29c10c8d-9486-48d0-aeb5-67ae130c12c5" name="RESTService" isAbstract="false" visibility="private"/>
+      <packagedElement xmi:type="uml:Component" xmi:id="a07ef8c7-d17f-4135-b6ff-73e3524df61f" name="ManagementService" isAbstract="false" visibility="private">
+        <ownedAttribute xmi:id="66a48ac5-ed0d-495d-b602-ba8d81f18dd7" association="3cf9b302-f67a-4b36-ab2c-8df1a44645d7">
+          <type xmi:idref="1408a4d8-e474-45ea-9c30-7140ad6ae78b"/>
+        </ownedAttribute>
+      </packagedElement>
+      <packagedElement xmi:type="uml:InformationFlow" xmi:id="c509004b-0fe3-4190-9f0f-c491ce5c8672" name="CustomerSearch_INFORMATION_FLOW_CustomerDB" isAbstract="false" visibility="private" informationSource="1408a4d8-e474-45ea-9c30-7140ad6ae78b" informationTarget="6ff575dd-e7ef-4df0-9956-f502a40835de">
+        <ownedComment xmi:type="uml:Comment" xmi:id="16849383-f4be-4242-840d-612b50c955e2" body="Search for customers by name or address">
+          <annotatedElement xmi:idref="c509004b-0fe3-4190-9f0f-c491ce5c8672"/>
+        </ownedComment>
+        <ownedComment xmi:type="uml:Comment" xmi:id="fafa61c1-c555-4f14-a345-ca993a7c6f58" body="Search for customers by name or address">
+          <annotatedElement xmi:idref="c509004b-0fe3-4190-9f0f-c491ce5c8672"/>
+        </ownedComment>
+      </packagedElement>
+      <packagedElement xmi:type="uml:InformationFlow" xmi:id="3cf9b302-f67a-4b36-ab2c-8df1a44645d7" name="CustomerSearch_BI_INFO_FLOW_ManagementService" isAbstract="false" visibility="private">
+        <memberEnd xmi:idref="e2f3b3d5-468f-4ef8-b21d-c386f1253306"/>
+        <memberEnd xmi:idref="66a48ac5-ed0d-495d-b602-ba8d81f18dd7"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Realization" xmi:id="54cad05c-f3da-4ea9-a0a6-537082665beb" name="Account_REALIZATION_Product" isAbstract="false" visibility="private" client="e0b496e9-0d9b-4f35-b5a7-f1d3de470341" supplier="9fa622a6-d44f-409a-b09d-a6712fde2787"/>
+      <packagedElement xmi:type="uml:Generalization" xmi:id="089c72d4-c621-476f-ae05-de1c9d46e8b5" name="CurrentAccount_INHERITANCE_Account" isAbstract="false" visibility="private"/>
+      <packagedElement xmi:type="uml:Generalization" xmi:id="564d92bd-99f4-4af1-8ce8-4fe95af5a947" name="SavingsAccount_INHERITANCE_Account" isAbstract="false" visibility="private"/>
+      <packagedElement xmi:type="uml:Association" xmi:id="aaf295ea-869b-45e7-8bae-93f3207c1752" name="Person_AGGREGATION_Product" isAbstract="false" visibility="private">
+        <memberEnd xmi:idref="19394aa7-6add-4481-abe4-b037b94cc049"/>
+        <ownedEnd xmi:id="7bbfaf19-f7a1-4314-8a98-aa66fc8077e7" xmi:association="aaf295ea-869b-45e7-8bae-93f3207c1752">
+          <type xmi:idref="755217c7-da96-4d0b-b4a3-072cd5be09c9"/>
+          <lowerValue xmi:type="uml:LiteralInteger" value="1" xmi:id="f579988a-583e-4c05-b97c-245a925272eb"/>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="-1" xmi:id="873d3db5-69b8-4bf6-9ea0-5ef83a6fadc7"/>
+        </ownedEnd>
+        <memberEnd xmi:idref="7bbfaf19-f7a1-4314-8a98-aa66fc8077e7"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Association" xmi:id="70e0cc0f-7e68-4fdd-a700-cae7e41b4504" name="Person_COMPOSITION_PowerOfAttorney" isAbstract="false" visibility="private">
+        <memberEnd xmi:idref="b0041505-35e4-43d3-9c03-e23dc578389a"/>
+        <ownedEnd xmi:id="2b4b9c7a-0af1-408c-b904-332595e6daf4" xmi:association="70e0cc0f-7e68-4fdd-a700-cae7e41b4504">
+          <type xmi:idref="755217c7-da96-4d0b-b4a3-072cd5be09c9"/>
+        </ownedEnd>
+        <memberEnd xmi:idref="2b4b9c7a-0af1-408c-b904-332595e6daf4"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Association" xmi:id="f6294806-7d16-49d6-b1c9-72fa9889ab48" name="PowerOfAttorney_ASSOCIATION_Person" isAbstract="false" visibility="private">
+        <memberEnd xmi:idref="b4ff8c0f-2bec-412d-a252-40f950c9c03c"/>
+        <ownedEnd xmi:id="5631f258-3251-433f-9418-9ebd1a5e2b66" xmi:association="f6294806-7d16-49d6-b1c9-72fa9889ab48">
+          <type xmi:idref="aa3c5567-aeda-45e0-b78a-3cc89455b757"/>
+        </ownedEnd>
+        <memberEnd xmi:idref="5631f258-3251-433f-9418-9ebd1a5e2b66"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Association" xmi:id="99035be9-7c1c-424b-8651-07a2b0706f44" name="Account_BI_ASSOCIATION_PaymentChannel" isAbstract="false" visibility="private">
+        <memberEnd xmi:idref="643aa76f-ba88-4257-87b2-f9b7c99d7233"/>
+        <memberEnd xmi:idref="8463c4f8-5c29-4ee8-a07f-87d3bca0a786"/>
+      </packagedElement>
+    </packagedElement>
+  </uml:Model>
+  <security:PIDRelevant base_Class="755217c7-da96-4d0b-b4a3-072cd5be09c9" xmi:id="26382302-30fd-46f5-b97d-c08157ab1459"/>
+  <security:PIDRelevant base_Class="755217c7-da96-4d0b-b4a3-072cd5be09c9" xmi:id="f1d6d2ee-b2df-4baa-b1ac-efe9a4eca6e0"/>
+  <security:PIDRelevant base_Class="755217c7-da96-4d0b-b4a3-072cd5be09c9" xmi:id="02966932-0236-4bec-8b91-024c17969157"/>
+  <regulatory:GDPR base_Component="6ff575dd-e7ef-4df0-9956-f502a40835de" xmi:id="693f2166-dfe2-482d-969e-b761e2c41df9"/>
+  <regulatory:GDPR base_Relation="c509004b-0fe3-4190-9f0f-c491ce5c8672" xmi:id="881371ab-61f9-427c-9f4d-3109fb6e6ac0"/>
+  <regulatory:GDPR base_Relation="c509004b-0fe3-4190-9f0f-c491ce5c8672" xmi:id="b14c35d1-482c-4090-9429-fd2606d5426f"/>
+</xmi:XMI>

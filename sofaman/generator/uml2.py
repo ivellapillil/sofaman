@@ -5,7 +5,7 @@ import uuid
 from sofaman.generator.generator import FileContext, Visitor
 import lxml.etree as etree
 from lxml.etree import Element, SubElement
-from sofaman.ir.model import Attribute, ArchElement, Module, Operation, Parameter, Struct, RelationType, PropertyContainer
+from sofaman.ir.model import Attribute, ArchElement, Module, Named, Operation, Parameter, Struct, RelationType, PropertyContainer
 from enum import Enum
 
 NS_UML = "http://schema.omg.org/spec/UML/2.1"
@@ -36,6 +36,7 @@ class XmiContext(FileContext):
         super().__init__(out_file)
         self.mode = mode
         self.root = None
+        self.ids = None
 
     def is_sparx_ea(self):
         """
@@ -80,16 +81,22 @@ class XmiVisitor(Visitor):
     def _lookup(self, obj):
         return self.registry.get(obj, None)
 
-    def _id_attr(self, elem, id=None):
-        id_val = id or str(uuid.uuid4())
+    def _id_attr(self, context, obj, elem, id=None):
+        e_id = None
+        if obj and context.ids and isinstance(obj, Named):
+            qname = obj.get_qname()
+            if qname:
+                # Check if there is an explicit ID for the object.
+                e_id = context.ids.get(qname, None)
+        id_val = e_id or id or str(uuid.uuid4())
         elem.set(XMI + "id", id_val)
         return id_val
 
     def _common_aspects(self, context, parent_elem, obj: ArchElement|str):
-        self._owned_comment(parent_elem, obj)
+        self._owned_comment(context, parent_elem, obj)
         self._stereotypes(context, parent_elem, obj)
 
-    def _owned_comment(self, parent, obj: ArchElement|str):
+    def _owned_comment(self, context, parent, obj: ArchElement|str):
         if isinstance(obj, str):
             return
         if not obj.description():
@@ -97,7 +104,7 @@ class XmiVisitor(Visitor):
         
         elem = SubElement(parent, UML + "ownedComment", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:Comment")
-        self._id_attr(elem) # Random ID
+        self._id_attr(context, obj, elem) # Random ID
         elem.set("body", obj.description())
         self._annotated_element(elem, obj)
         # No need to register.
@@ -116,7 +123,7 @@ class XmiVisitor(Visitor):
         for stereo in obj.stereotypes():
             elem = SubElement(context.root, "{%s}" % stereo.profile + stereo.name, nsmap=NS_MAP)
             elem.set("base_" + obj.__class__.__name__, obj.id)
-            self._id_attr(elem) # Random ID
+            self._id_attr(context, obj, elem) # Random ID
 
         # No need to register.
         return elem
@@ -124,7 +131,7 @@ class XmiVisitor(Visitor):
     def _packaged_element(self, context, parent, obj: ArchElement|str, uml_name, is_abstract=False):
         elem = SubElement(parent, UML + "packagedElement", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:"+uml_name)
-        self._id_attr(elem, obj.id)
+        self._id_attr(context, obj, elem, obj.id)
         elem.set("name", obj.get_name())
         elem.set("isAbstract", str(is_abstract).lower())
         elem.set("visibility", obj.visibility.value)
@@ -136,13 +143,13 @@ class XmiVisitor(Visitor):
         relation_elem.set("client", src_ep.endpoint_obj.id)
         relation_elem.set("supplier", tgt_ep.endpoint_obj.id)
 
-    def _inheritance(self, relation, src_ep: RelationEndPoint, tgt_ep: RelationEndPoint):
+    def _inheritance(self, context, relation, src_ep: RelationEndPoint, tgt_ep: RelationEndPoint):
         elem = SubElement(src_ep.endpoint_elem, UML + "generalization", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:Generalization")
         if relation.struct and relation.struct.name: elem.set("name", relation.struct.name)
         elem.set("general", tgt_ep.endpoint_obj.id)
         elem.set("isSubstitutable", "true") # TODO: May be need to be exposed in sofa
-        self._id_attr(elem) # Generated ID
+        self._id_attr(context, relation, elem) # Generated ID
 
     def _info_flow(self, relation_elem, src_ep: RelationEndPoint, tgt_ep: RelationEndPoint):
         relation_elem.set("informationSource", src_ep.endpoint_obj.id)
@@ -154,14 +161,14 @@ class XmiVisitor(Visitor):
     def _owned_literal(self, context, parent, obj, name):
         elem = SubElement(parent, UML + "ownedLiteral", nsmap=NS_MAP)
         elem.set("name", name)
-        self._id_attr(elem, obj.id)
+        self._id_attr(context, obj, elem, obj.id)
         self._register(obj, elem)
         self._common_aspects(context, elem, obj)
         return elem
 
     def _owned_attribute(self, context, parent, attr):
         elem = SubElement(parent, UML + "ownedAttribute", nsmap=NS_MAP)
-        self._id_attr(elem, attr.id)
+        self._id_attr(context, attr, elem, attr.id)
         if isinstance(attr, str):
             elem.set("name", attr)
         elif isinstance(attr, Attribute):
@@ -183,7 +190,7 @@ class XmiVisitor(Visitor):
 
     def _owned_operation(self, context, parent, op: Operation):
         elem = SubElement(parent, UML + "ownedOperation", nsmap=NS_MAP)
-        self._id_attr(elem, op.id)
+        self._id_attr(context, op, elem, op.id)
         if isinstance(op, str):
             elem.set("name", op)
         elif isinstance(op, Operation):
@@ -199,7 +206,7 @@ class XmiVisitor(Visitor):
 
     def _owned_parameter(self, context, parent, parameter):
         elem = SubElement(parent, UML + "ownedParameter", nsmap=NS_MAP)
-        self._id_attr(elem, parameter.id)
+        self._id_attr(context, parameter, elem, parameter.id)
         if isinstance(parameter, str):
             elem.set("name", parameter)
         elif isinstance(parameter, Parameter):
@@ -218,9 +225,9 @@ class XmiVisitor(Visitor):
         self._lower_value(elem, lower)
         self._upper_value(elem, upper)
 
-    def _owned_association_attribute(self, parent, obj, relation):
+    def _owned_association_attribute(self, context, parent, obj, relation):
         elem = SubElement(parent, UML + "ownedAttribute", nsmap=NS_MAP)
-        self._id_attr(elem)
+        self._id_attr(context, obj, elem)
         elem.set("association", relation.id)
         self._type(elem, obj.id)
         self._cardinality(elem, relation.source.cardinality)
@@ -231,7 +238,7 @@ class XmiVisitor(Visitor):
         elem = SubElement(parent, UML + "lowerValue", nsmap=NS_MAP)
         elem.set(XMI+"type", "uml:LiteralInteger")
         elem.set("value", str(value))
-        self._id_attr(elem)
+        self._id_attr(None, None, elem) # No external ids
         # No registration as it is an attribute that is specific to XMI structure
         return elem
 
@@ -239,7 +246,7 @@ class XmiVisitor(Visitor):
         elem = SubElement(parent, UML + "upperValue", nsmap=NS_MAP)
         elem.set(XMI+"type", "uml:LiteralUnlimitedNatural")
         elem.set("value", str(value))
-        self._id_attr(elem)
+        self._id_attr(None, None, elem) # No external ids
         # No registration as it is an attribute that is specific to XMI structure
         return elem
 
@@ -249,9 +256,9 @@ class XmiVisitor(Visitor):
         # No registration as it is an attribute that is specific to XMI structure
         return elem
 
-    def _owned_end(self, parent, relation, obj_refid):
+    def _owned_end(self, context, parent, relation, obj_refid):
         elem = SubElement(parent, UML + "ownedEnd", nsmap=NS_MAP)
-        self._id_attr(elem)
+        self._id_attr(context, relation, elem)
 
         elem.set(XMI+"association", relation.id)
 
@@ -373,17 +380,17 @@ class XmiVisitor(Visitor):
             case RelationType.REALIZATION:
                 self._realization(rel_elem, src_endpoint, tgt_endpoint)
             case RelationType.INHERITANCE:
-                self._inheritance(relation, src_endpoint, tgt_endpoint)
+                self._inheritance(context, relation, src_endpoint, tgt_endpoint)
             case RelationType.INFORMATION_FLOW:
                 self._info_flow(rel_elem, src_endpoint, tgt_endpoint)
             case _:
-                self._connection_relationship_ends(relation, rel_elem, src_endpoint, tgt_endpoint)
+                self._connection_relationship_ends(context, relation, rel_elem, src_endpoint, tgt_endpoint)
 
         self._common_aspects(context, rel_elem, relation)
 
-    def _connection_relationship_ends(self, relation, rel_elem, src_endpoint: RelationEndPoint, tgt_endpoint: RelationEndPoint):
+    def _connection_relationship_ends(self, context, relation, rel_elem, src_endpoint: RelationEndPoint, tgt_endpoint: RelationEndPoint):
         # Target endpoint has an ownedAttribute that refers to the source obj
-        src_owned_attr_pointing_to_tgt = self._owned_association_attribute(src_endpoint.endpoint_elem, tgt_endpoint.endpoint_obj, relation)
+        src_owned_attr_pointing_to_tgt = self._owned_association_attribute(context, src_endpoint.endpoint_elem, tgt_endpoint.endpoint_obj, relation)
         # Relation now needs to point to that attribute on one end
         self._member_end(rel_elem, src_owned_attr_pointing_to_tgt.attrib[f"{XMI}id"])
         
@@ -396,11 +403,11 @@ class XmiVisitor(Visitor):
                 src_owned_attr_pointing_to_tgt.set("aggregation", "none")
 
         if relation.is_bidirectional():
-            tgt_owned_attr_pointing_to_tgt = self._owned_association_attribute(tgt_endpoint.endpoint_elem, src_endpoint.endpoint_obj, relation)
+            tgt_owned_attr_pointing_to_tgt = self._owned_association_attribute(context, tgt_endpoint.endpoint_elem, src_endpoint.endpoint_obj, relation)
             self._member_end(rel_elem, tgt_owned_attr_pointing_to_tgt.attrib[f"{XMI}id"])
         else:
             # Additional member points to ownedElem of the relation itself.
-            rel_owned_end_elem = self._owned_end(rel_elem, relation, src_endpoint.endpoint_obj.id)
+            rel_owned_end_elem = self._owned_end(context, rel_elem, relation, src_endpoint.endpoint_obj.id)
             self._member_end(rel_elem, rel_owned_end_elem.attrib[f"{XMI}id"])
 
     def visit_interface(self, context, interface): 

@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from sofaman.sofamangen import generate
+from sofaman.sofamangen import generate, export
 
 def test_generate_xmi(tmp_path):
     runner = CliRunner()
@@ -40,3 +40,15 @@ def test_generate_missing_input():
 
     assert result.exit_code != 0
     assert "Error: Invalid value for 'INPUT'" in result.output
+
+def test_export_id(tmp_path):
+    runner = CliRunner()
+    input_file = tmp_path / "input.xmi"
+    output_file = tmp_path / "output.json"
+    input_file.write_text("<xmi:XMI xmlns:xmi='http://schema.omg.org/spec/XMI/2.1'></xmi:XMI>")
+
+    result = runner.invoke(export, [str(input_file), str(output_file)])
+
+    assert result.exit_code == 0
+    assert output_file.exists()
+

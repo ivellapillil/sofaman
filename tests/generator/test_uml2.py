@@ -19,6 +19,7 @@ class _XMLContext:
     
     def __init__(self):
         self.root = None
+        self.ids = None
 
     def name(self):
         return "Test"
@@ -36,11 +37,13 @@ class TestUml2Generator:
         sofa_ir = SofaIR()
         return _Setup(sofa_parser, sofa_ir)
     
-    def _generate(self, setup : _Setup, sofa_lang_fn):
+    def _generate(self, setup : _Setup, sofa_lang_fn, ids = None):
         tree = setup.sofa_parser.parse(sofa_lang_fn())
         sofa_root = setup.sofa_ir._build(IrContext(setup.sofa_ir), tree)
         setup.sofa_root = sofa_root
         context = _XMLContext()
+        if ids:
+            context.ids = ids
         visitor = XmiVisitor()
         Generator().generate(sofa_root, context, visitor)
         return self._get_root(context.root)
@@ -318,3 +321,12 @@ class TestUml2Generator:
     def test_uml_domain(self, setup): ... # Not implemented yet in the generator
 
     def test_uml_capability(self, setup): ... # Not implemented yet in the generator
+
+    def test_id_substitution(self, setup):
+        root = self._generate(setup, test_variations.interface_variations, ids={
+            "A": "9fa622a6-d44f-409a-b09d-a6712fde2787"
+        })
+
+        elem = self._get_packaged_element_by_name(root, "A")
+        assert elem.get(f"{XMI}type") == "uml:Interface"
+        assert elem.get(f"{XMI}id") == "9fa622a6-d44f-409a-b09d-a6712fde2787"
