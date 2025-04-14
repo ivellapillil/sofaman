@@ -8,11 +8,11 @@
             "name": "Python Debugger: Main.py PUML",
             "type": "debugpy",
             "request": "launch",
-            "program": "sofaman/main.py",
+            "program": "sofaman/sofamangen.py",
             "console": "integratedTerminal",
             "args": [
-                "--input_file=tests/test_cases/full_all.sofa",
-                "--output_file=out.puml",
+                "--input=tests/test_cases/full_all.sofa",
+                "--output=out.puml",
                 "--type=puml",
                 "build"
             ]
@@ -21,13 +21,27 @@
             "name": "Python Debugger: Main.py XMI",
             "type": "debugpy",
             "request": "launch",
-            "program": "sofaman/main.py",
+            "program": "sofaman/sofamangen.py",
             "console": "integratedTerminal",
             "args": [
-                "--input_file=tests/test_cases/full_all.sofa",
-                "--output_file=out.xmi",
+                "--input=tests/test_cases/full_all.sofa",
+                "--output=out.xmi",
                 "--type=xmi",
                 "build"
+            ]
+        },
+        {
+            "name": "Python Debugger: Main.py XMI with ids_file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "sofaman/sofamangen.py",
+            "console": "integratedTerminal",
+            "args": [
+                "generate",
+                "tests/test_cases/full_all.sofa",
+                "out.xmi",
+                "--ids_file",
+                "tests/test_cases/full_all_id.json"
             ]
         },
         {

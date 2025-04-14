@@ -330,3 +330,17 @@ class TestUml2Generator:
         elem = self._get_packaged_element_by_name(root, "A")
         assert elem.get(f"{XMI}type") == "uml:Interface"
         assert elem.get(f"{XMI}id") == "9fa622a6-d44f-409a-b09d-a6712fde2787"
+
+    def test_id_substitution_nested(self, setup):
+        root = self._generate(setup, test_variations.package_variations, ids={
+            "A.B.X": "ID_for_ABX",
+            "C": "ID_for_Package_C"
+        })
+
+        elem = self._get_packaged_element_by_name(root, "X")
+        assert elem.get(f"{XMI}type") == "uml:Class"
+        assert elem.get(f"{XMI}id") == "ID_for_ABX"
+
+        elem2 = self._get_packaged_element_by_name(root, "C")
+        assert elem2.get(f"{XMI}type") == "uml:Package"
+        assert elem2.get(f"{XMI}id") == "ID_for_Package_C"
