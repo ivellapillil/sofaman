@@ -309,6 +309,13 @@ class ArchElement(SofaBase, Named, PropertyContainer):
     def get_name(self):
         return self.struct.name
 
+    def get_display_name(self):
+        nm = self.get_name()
+        props = self.props
+        if "name" in props: 
+            nm = props['name'] + " (" + nm + ")"
+        return nm
+
     def get_qname(self):
         # If there is no parent, return original name
         names = [self.get_name()]

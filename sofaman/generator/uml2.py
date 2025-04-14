@@ -134,7 +134,10 @@ class XmiVisitor(Visitor):
         elem = SubElement(parent, UML + "packagedElement", nsmap=NS_MAP)
         elem.set(XMI + "type", "uml:"+uml_name)
         self._id_attr(context, obj, elem, obj.id)
-        elem.set("name", obj.get_name())
+        if isinstance(obj, ArchElement):
+            elem.set("name", obj.get_display_name())
+        else:
+            elem.set("name", obj.get_name())
         elem.set("isAbstract", str(is_abstract).lower())
         elem.set("visibility", obj.visibility.value)
         self._register(obj, elem)

@@ -108,7 +108,7 @@ class TestUml2Generator:
         elem = self._get_packaged_element_by_name(root, "A")
         assert elem.get(f"{XMI}type") == "uml:Actor"
 
-        elem2 = self._get_packaged_element_by_name(root, "B")
+        elem2 = self._get_packaged_element_by_name(root, "B actor (B)")
         assert elem2.get(f"{XMI}type") == "uml:Actor"
 
         # Comments are the same for all different elements. So we test
@@ -127,7 +127,7 @@ class TestUml2Generator:
         elem = self._get_packaged_element_by_name(root, "A")
         assert elem.get(f"{XMI}type") == "uml:Component"
 
-        elem2 = self._get_packaged_element_by_name(root, "B")
+        elem2 = self._get_packaged_element_by_name(root, "A B component (B)")
         assert elem2.get(f"{XMI}type") == "uml:Component"
 
         # TODO: Need to add test for ports once there is the support for it
