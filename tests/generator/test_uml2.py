@@ -324,7 +324,7 @@ class TestUml2Generator:
 
     def test_id_substitution(self, setup):
         root = self._generate(setup, test_variations.interface_variations, ids={
-            "A": "9fa622a6-d44f-409a-b09d-a6712fde2787"
+            "Test.A": "9fa622a6-d44f-409a-b09d-a6712fde2787"
         })
 
         elem = self._get_packaged_element_by_name(root, "A")
@@ -333,8 +333,8 @@ class TestUml2Generator:
 
     def test_id_substitution_nested(self, setup):
         root = self._generate(setup, test_variations.package_variations, ids={
-            "A.B.X": "ID_for_ABX",
-            "C": "ID_for_Package_C"
+            "Test.A.B.X": "ID_for_ABX",
+            "Test.C": "ID_for_Package_C"
         })
 
         elem = self._get_packaged_element_by_name(root, "X")
