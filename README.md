@@ -118,3 +118,20 @@ pip install sofaman
 python -m sofaman.sofamangen --help
 ```
 
+## Generate UML2 XMI
+
+```
+python -m sofaman.sofamangen generate a_model.sofa a_model.xmi
+```
+
+If you already have a XMI file and want to ensure updates to it are done using the same IDs (so as to preserve the diagram and other elements)
+
+1. Generate the ID file
+    ```
+    python -m sofaman.sofamangen export a_model.xmi a_model_id.json
+    ```
+
+2. You can use the id file while re-generating the XMI
+    ```
+    python -m sofaman.sofamangen generate a_model.sofa a_model.xmi --ids_file 
+    ```
